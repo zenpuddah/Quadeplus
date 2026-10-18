@@ -1,0 +1,11 @@
+/build/
+/.build/
+/.idea/
+**/.DS_Store
+/CMakeUserPresets.json
+__pycache__/
+*.py[cod]
+.env
+.env.*
+/data/
+/artifacts/
