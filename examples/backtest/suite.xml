@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<suite version="1" costs="5,10,20" cache="disabled">
+  <profile name="sma" config="sma.xml"/>
+  <profile name="keltner" config="keltner.xml"/>
+  <profile name="stochastic-fresh" config="stochastic-fresh.xml"/>
+  <profile name="stochastic-legacy" config="stochastic-legacy.xml"/>
+</suite>

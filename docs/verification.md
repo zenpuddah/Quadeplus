@@ -1,5 +1,24 @@
 # Verification and limits
 
+## Public backtesting implementation
+
+The current public implementation passes **16/16 backtesting tests and 10/10 core
+tests** in a fresh Release build on macOS arm64 with AppleClang 21, Python 3.14,
+the pinned public Lexongine helper and TinyXML2 11.0.0. The backtesting profile uses
+synthetic inputs and includes exact accounting/features, all three strategies,
+typed hosted execution, shared/unshared/reused equivalence, native build identity,
+report reconciliation and publication/failure gates.
+
+The [public demo](backtesting.md) also passes independent strategy and report checks
+for three accepted runs / 12 accounts: 2,697 financial events, 1,314 close observations,
+22,929 exact report checks and 36 floating-statistic checks. Exact financial values
+use no tolerance; named floating statistics use relative 2e-12 / absolute 2e-14.
+These generated fixtures are not historical research performance. The historical
+research archive and full-market-data reproduction are not part of public inputs.
+
+CI checks formatting, Python lint and the staged public path/content inventory.
+Native runtime checks are a separate macOS release-verification gate.
+
 ## Formatting and lint update — 2026-10-20
 
 The formatted public tree passes the pinned [style checks](contributing.md),
@@ -66,8 +85,9 @@ bounded in memory and capture durability is conservative rather than throughput-
 optimized. Fault tests do not certify all filesystems or power-loss scenarios.
 
 Automatic repair/recovery scheduling, generalized persistent cache/catalog,
-cross-acquisition merging, binary replay, live execution, financial simulation and
-Python bindings remain outside this release. Immutable corrected versions alone
+cross-acquisition merging, binary replay, live execution and Python bindings remain
+outside this release. Financial simulation is covered separately by the
+[daily backtesting profile](backtesting.md). Immutable corrected versions alone
 do not establish what was available to a historical trading decision.
 
 The optional Databento SDK test requires the supported external v0.67.0 checkout.

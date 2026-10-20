@@ -1,0 +1,26 @@
+{
+  "files": [
+    ".gitignore", ".clang-format", ".cmake-format.json", "ruff.toml",
+    "requirements-quality.txt", "CMakeLists.txt", "README.md",
+    ".github/workflows/style.yml", "tools/check_style.py", "tools/check_public.py",
+    "tools/public-files.json", "tools/run_backtest_demo.py",
+    "docs/build.md", "docs/architecture.md", "docs/storage.md", "docs/verification.md",
+    "docs/contributing.md", "docs/backtesting.md", "dependencies/backtesting.lock.json",
+    "integration/storage/CMakeLists.txt", "integration/databento/CMakeLists.txt",
+    "integration/backtest/CMakeLists.txt", "benchmarks/data_model_benchmark.cpp",
+    "integration/backtest/main.cpp", "src/quant/backtest/host.cpp",
+    "src/quant/strategies/policies.cpp", "src/quant/strategies/features.cpp",
+    "src/quant/strategies/stochastic.cpp"
+  ],
+  "source_directories": {
+    "src/quant/data": [".hpp"], "src/quant/ingestion": [".hpp"],
+    "src/quant/integrity": [".hpp"], "src/quant/storage": [".hpp"],
+    "src/quant/backtest": [".hpp", ".cpp"], "src/quant/research": [".hpp", ".cpp"],
+    "src/quant/strategies": [".hpp", ".cpp"], "tests": [".cpp", ".hpp"],
+    "integration/storage": [".cpp", ".hpp", ".py"],
+    "integration/databento": [".cpp", ".hpp", ".py"],
+    "integration/backtest": [".cpp", ".hpp", ".py", ".cmake"],
+    "examples/backtest": [".xml"]
+  },
+  "excluded_files": ["integration/backtest/clean_run.py"]
+}

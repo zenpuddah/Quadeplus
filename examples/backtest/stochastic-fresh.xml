@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<backtest version="1" strategy="spy_stochastic5_v1" profile="fresh_research_v1"
+  symbol="SPY" currency="USD" numerical_origin="2004-11-18"
+  evaluation_begin="2010-01-04" evaluation_end="2026-10-15"
+  initial_cash_cents="1000000" lot_step_raw="1"
+  commission_bps="5" slippage_bps="5" allocation_bps="9500"
+  window="5" zero_range="1/2" entry="20" exit="80" max_holding_bars="10"
+  max_price_raw="10000000000000" terminal="mark" controls="cash,buy_hold"
+  sharing="exact" cache="disabled" resource_profile="stochastic_cli_bounds_v1"/>

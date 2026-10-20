@@ -13,3 +13,4 @@ jobs:
       - run: python -m venv .venv-quality
       - run: .venv-quality/bin/python -m pip install -r requirements-quality.txt
       - run: .venv-quality/bin/python tools/check_style.py
+      - run: .venv-quality/bin/python tools/check_public.py

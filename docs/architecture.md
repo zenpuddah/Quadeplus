@@ -19,6 +19,9 @@ query + exact reference/mapping snapshot
 | `quant/ingestion` | Canonical queries, mapping/fetch plans, provider ports, quality and synchronous orchestration |
 | `quant/integrity` | Acquisition/reference identity, original associations, validation reports and consumer requirements |
 | `quant/storage` | Evidence codecs, retained capture, Arrow interchange, immutable publication and checked readers |
+| `quant/research` | Immutable daily research bundles, exact normalization, sealed schedules and causal Bar projections |
+| `quant/backtest` | Financial host, exact settlement/ledger, orders/fills, risk and reports |
+| `quant/strategies` | SMA, Keltner/ATR and stochastic numerical features and decision policies |
 
 Provider dataset/schema/symbol conventions stay behind adapters. Consumers use
 `MarketDataReader` rather than the concrete Parquet implementation. Query selection
@@ -69,3 +72,27 @@ Qaedalus source checkout. Set `LEXONGINE_QAEDALUS_SOURCE_DIR` to this repository
 building that optional integration. The canonical data headers and reader APIs are
 preserved from the compatible baseline; Lexongine checks shared type compatibility.
 The computation engine itself is not included here.
+
+## Daily research host
+
+The daily research path is separate from canonical market-data Parquet schemas:
+
+```text
+retained daily CSV + sealed schedule + explicit input hashes
+    -> immutable daily research bundle
+    -> dividend and opening projections
+    -> prior intent execution and exact ledger posting
+    -> Lexongine completed-Bar numerical step
+    -> close valuation, risk and next intent
+    -> required report closure and acceptance
+```
+
+Numerical feature observers have no account capability. Independent financial
+accounts remain separate even when their pure features share computation. Typed
+Price and Ratio observations must be admitted before funding. Source exhaustion
+is a separate handshake, not an inference from the last Bar. Failed runs retain
+their prefix and cannot publish accepted numerical cache origins.
+
+The public [synthetic demonstration](backtesting.md) exercises this host without
+historical data. Its reports and source/build identities use the same native
+application as externally supplied compatible research bundles.

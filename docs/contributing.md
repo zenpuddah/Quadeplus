@@ -8,6 +8,18 @@ python3 -m venv .venv-quality
 .venv-quality/bin/python tools/check_style.py
 ```
 
+After staging changes, also run:
+
+```sh
+.venv-quality/bin/python tools/check_public.py
+```
+
+`tools/public-files.json` defines the approved public paths. The content check rejects
+unapproved files, non-text data, credential markers and internal development material.
+It checks the staged tree, including file modes; it never deletes or rewrites files.
+The checker's own detection literals are the only content-policy exception, and its
+credential checks still apply. Review any policy changes explicitly.
+
 To apply formatting, then check Python lint:
 
 ```sh
@@ -26,7 +38,7 @@ The checker verifies tool versions and processes Git-listed tracked and nonignor
 new source files, including C++ templates. Ignored build/dependency outputs are not
 formatted. Keep external dependencies outside tracked source directories.
 
-GitHub Actions runs the same check on pushes and pull requests. CLion can use the
+GitHub Actions runs both checks on pushes and pull requests. CLion can use the
 root `.clang-format`; use the pinned command-line tool for the authoritative check.
 Keep shared canonical headers consistent with Lexongine. Formatting must preserve
 program behavior, literals and serialization contracts. Rebuild and run the relevant

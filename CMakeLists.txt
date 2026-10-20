@@ -12,6 +12,10 @@ option(QUADEPLUS_DATABENTO "Build the optional Databento SDK adapter tests" OFF)
 option(QUADEPLUS_DATABENTO_SMOKE "Build the credentialed, billable provider smoke executable" OFF)
 option(QUADEPLUS_SANITIZERS "Instrument project code with ASan/UBSan" OFF)
 option(QUADEPLUS_BENCHMARKS "Build the data-model benchmark" OFF)
+option(QUADEPLUS_BACKTEST "Build the daily research backtester and synthetic verification" OFF)
+set(QUADEPLUS_LEXONGINE_SOURCE_DIR
+    ""
+    CACHE PATH "Explicit external Lexongine checkout for backtesting")
 
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -58,4 +62,8 @@ if(QUADEPLUS_BENCHMARKS)
     add_executable(quadeplus_data_model_benchmark benchmarks/data_model_benchmark.cpp)
     target_link_libraries(quadeplus_data_model_benchmark PRIVATE Quadeplus::core)
     target_compile_options(quadeplus_data_model_benchmark PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+if(QUADEPLUS_BACKTEST)
+    add_subdirectory(integration/backtest)
 endif()

@@ -1,9 +1,9 @@
 # Quadeplus
 
-C++20 market-data foundations for research: canonical financial types, historical
-ingestion, retained source evidence, immutable datasets and checked replay.
+C++20 market-data foundations and daily research backtesting: canonical financial
+types, historical ingestion, immutable datasets, exact accounting and strategy reports.
 
-**v1.0.0 — data foundation**
+**Data foundation + three-strategy research backtesting**
 
 ## Capabilities
 
@@ -14,11 +14,20 @@ ingestion, retained source evidence, immutable datasets and checked replay.
 - Separate raw, canonical and consumer evidence with immutable publication.
 - Arrow/Parquet storage and checked batch/event access through `MarketDataReader`.
 - An optional Databento XNAS.ITCH historical MBO adapter.
+- Native SMA20/50, Keltner/ATR and stochastic backtests using Lexongine.
+- Explicit order/fill state, costs, dividends, risk and exact portfolio/P&L accounting.
+- Independent verification and required HTML/JSON/CSV financial reports.
 
-The current implementation is a data layer, not a strategy engine or complete
-backtester. Orders, fills, execution/cost models and portfolio/PnL accounting are
-outside this release. [Lexongine](https://github.com/zenpuddah/Lexongine) is the
-separate computation engine.
+Quadeplus owns financial simulation; [Lexongine](https://github.com/zenpuddah/Lexongine)
+is the separate numerical computation engine. The public demonstration generates
+synthetic data locally. Historical research datasets are not distributed.
+
+## Run the backtester and view reports
+
+Follow **[the backtesting quick start](docs/backtesting.md)** to build the native
+application, run all three synthetic strategies and open `index.html` with links
+to their financial reports. Native backtesting is verified on macOS arm64; the
+default core-only build below remains dependency-free.
 
 ## Build the dependency-free core
 

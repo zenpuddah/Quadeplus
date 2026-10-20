@@ -12,6 +12,13 @@ The core is header-based C++20 under `src/quant`. `Quadeplus::core` supplies its
 include path and language requirement to CMake consumers. The default build runs
 ten deterministic tests. It does not configure external SDKs or fetch data.
 
+## Backtesting
+
+For the optional native strategy application, use the separate
+[backtesting build and synthetic-report guide](backtesting.md). Enable
+`QUADEPLUS_BACKTEST` with explicit compatible Lexongine and TinyXML2 source paths.
+That daily research profile does not require Arrow/Parquet or a provider SDK.
+
 ## Storage
 
 Enable `QUADEPLUS_STORAGE` and supply native Arrow/Parquet CONFIG packages. The

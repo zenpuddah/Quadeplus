@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<backtest version="1" strategy="keltner_atr_risk_v1" profile="fresh_research_v1"
+  symbol="SPY" currency="USD" numerical_origin="2004-11-18"
+  evaluation_begin="2010-01-04" evaluation_end="2026-10-15"
+  initial_cash_cents="1000000" lot_step_raw="1" commission_bps="5" slippage_bps="5"
+  allocation_bps="9500" ema_window="20" atr_window="10"
+  channel_widths="3/2,2/1,5/2,2/1" drawdown_bps="2000"
+  max_price_raw="10000000000000" terminal="mark" controls="cash,buy_hold"
+  sharing="exact" cache="disabled" cache_directory="none"
+  resource_profile="keltner_cli_bounds_v1"/>

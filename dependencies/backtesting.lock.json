@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "name": "Lexongine",
+      "url": "https://github.com/zenpuddah/Lexongine.git",
+      "commit": "aeac6e9112c4e52ca4fbdd5a460e20a81d5af771"
+    },
+    {
+      "name": "tinyxml2",
+      "url": "https://github.com/leethomason/tinyxml2.git",
+      "commit": "9148bdf719e997d1f474be6bcc7943881046dba1",
+      "version": "11.0.0"
+    }
+  ],
+  "native": {
+    "platform": "macOS arm64",
+    "cpp_standard": 20,
+    "cmake_minimum": "3.25",
+    "compiler": "Apple C++ toolchain/libc++",
+    "record_actual_versions": true
+  },
+  "inputs": "The public demonstration generates synthetic fixtures locally. Historical research inputs are not distributed."
+}
