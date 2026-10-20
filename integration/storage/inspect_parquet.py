@@ -50,7 +50,7 @@ def inspect_package(path, show_evidence):
     hashes = {}
     parents = []
     for index in range(count):
-        name, digest, stage, parent, parent_digest = manifest[15 + index * 5:20 + index * 5]
+        name, digest, stage, parent, parent_digest = manifest[15 + index * 5 : 20 + index * 5]
         relative = Path(name)
         if relative.is_absolute() or ".." in relative.parts:
             raise ValueError("unsafe evidence path")
@@ -76,8 +76,14 @@ def inspect_package(path, show_evidence):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("path", help="Parquet file or version directory printed by the manual C++ example")
-    parser.add_argument("--evidence", action="store_true", help="also display retained acquisition, reference and validation text")
+    parser.add_argument(
+        "path", help="Parquet file or version directory printed by the manual C++ example"
+    )
+    parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="also display retained acquisition, reference and validation text",
+    )
     args = parser.parse_args()
     path = Path(args.path)
     if path.is_dir():

@@ -23,7 +23,7 @@ struct ReferenceVersion {
 };
 
 class ReferenceHistory {
-public:
+  public:
     explicit ReferenceHistory(const InstrumentId instrument_id) : instrument_id_(instrument_id) {}
 
     void append(ReferenceVersion version) {
@@ -44,7 +44,7 @@ public:
         }
 
         if (!versions_.empty()) {
-            const auto& previous = versions_.back();
+            const auto &previous = versions_.back();
             if (!previous.valid_until) {
                 throw std::invalid_argument("Cannot append after an open reference interval");
             }
@@ -56,28 +56,28 @@ public:
         versions_.push_back(std::move(version));
     }
 
-    [[nodiscard]] const ReferenceVersion* at(const Timestamp time) const noexcept {
-        const auto candidate = std::upper_bound(
-            versions_.begin(),
-            versions_.end(),
-            time,
-            [](const Timestamp lookup_time, const ReferenceVersion& version) {
-                return lookup_time < version.valid_from;
-            });
+    [[nodiscard]] const ReferenceVersion *at(const Timestamp time) const noexcept {
+        const auto candidate =
+            std::upper_bound(versions_.begin(), versions_.end(), time,
+                             [](const Timestamp lookup_time, const ReferenceVersion &version) {
+                                 return lookup_time < version.valid_from;
+                             });
         if (candidate == versions_.begin()) {
             return nullptr;
         }
 
-        const auto& version = *(candidate - 1);
+        const auto &version = *(candidate - 1);
         if (!version.valid_until || time < *version.valid_until) {
             return &version;
         }
         return nullptr;
     }
 
-    [[nodiscard]] std::size_t size() const noexcept { return versions_.size(); }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return versions_.size();
+    }
 
-private:
+  private:
     InstrumentId instrument_id_;
     std::vector<ReferenceVersion> versions_;
 };

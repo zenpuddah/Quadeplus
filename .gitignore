@@ -9,3 +9,5 @@ __pycache__/
 .env.*
 /data/
 /artifacts/
+/.venv-quality/
+/.ruff_cache/

@@ -24,15 +24,15 @@ Timestamp time(const std::int64_t nanos) {
 }
 
 void test_noop_cache() {
-    const MarketDataQuery query{InstrumentId{42}, std::nullopt, MarketDataLevel::L3, TimeRange{time(10), time(20)}};
+    const MarketDataQuery query{InstrumentId{42}, std::nullopt, MarketDataLevel::L3,
+                                TimeRange{time(10), time(20)}};
     NoopCache cache;
 
     const auto lookup = cache.lookup(query);
     require(lookup.status == CacheStatus::Miss, "NoopCache must always report a miss");
     require(lookup.covered.empty(), "NoopCache must not report covered ranges");
-    require(
-        lookup.missing == std::vector<TimeRange>{query.primary_range()},
-        "NoopCache must miss the full primary canonical range");
+    require(lookup.missing == std::vector<TimeRange>{query.primary_range()},
+            "NoopCache must miss the full primary canonical range");
 }
 
 void test_noop_recovery() {
@@ -64,7 +64,7 @@ int main() {
         test_noop_cache();
         test_noop_recovery();
         std::cout << "ingestion_ports_tests: passed\n";
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << "ingestion_ports_tests: failed: " << error.what() << '\n';
         return 1;
     }

@@ -15,15 +15,15 @@ struct ValidationIssue {
 
 using ValidationIssues = std::vector<ValidationIssue>;
 
-[[nodiscard]] inline bool is_valid(const ValidationIssues& issues) noexcept {
+[[nodiscard]] inline bool is_valid(const ValidationIssues &issues) noexcept {
     return issues.empty();
 }
 
-inline void add_issue(ValidationIssues& issues, std::string code, std::string message) {
+inline void add_issue(ValidationIssues &issues, std::string code, std::string message) {
     issues.push_back(ValidationIssue{std::move(code), std::move(message)});
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboEvent& event) {
+[[nodiscard]] inline ValidationIssues validate(const MboEvent &event) {
     ValidationIssues issues;
 
     if (event.side && *event.side != Side::Buy && *event.side != Side::Sell) {
@@ -68,11 +68,11 @@ inline void add_issue(ValidationIssues& issues, std::string code, std::string me
     return issues;
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboAdd&) {
+[[nodiscard]] inline ValidationIssues validate(const MboAdd &) {
     return {};
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboModify& event) {
+[[nodiscard]] inline ValidationIssues validate(const MboModify &event) {
     ValidationIssues issues;
     if (!event.side && !event.price && !event.quantity) {
         add_issue(issues, "empty_modify", "Modify events require at least one order field");
@@ -80,30 +80,31 @@ inline void add_issue(ValidationIssues& issues, std::string code, std::string me
     return issues;
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboCancel&) {
+[[nodiscard]] inline ValidationIssues validate(const MboCancel &) {
     return {};
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboExecute&) {
+[[nodiscard]] inline ValidationIssues validate(const MboExecute &) {
     return {};
 }
 
-[[nodiscard]] inline ValidationIssues validate(const MboClear&) {
+[[nodiscard]] inline ValidationIssues validate(const MboClear &) {
     return {};
 }
 
-[[nodiscard]] inline ValidationIssues validate(const Trade& trade) {
+[[nodiscard]] inline ValidationIssues validate(const Trade &trade) {
     ValidationIssues issues;
     if (trade.quantity.is_zero()) {
         add_issue(issues, "zero_trade_quantity", "Trade quantity must be positive");
     }
-    if (trade.aggressor_side && *trade.aggressor_side != Side::Buy && *trade.aggressor_side != Side::Sell) {
+    if (trade.aggressor_side && *trade.aggressor_side != Side::Buy &&
+        *trade.aggressor_side != Side::Sell) {
         add_issue(issues, "unknown_side", "Trade side is outside the canonical vocabulary");
     }
     return issues;
 }
 
-[[nodiscard]] inline ValidationIssues validate(const OrderExecution& execution) {
+[[nodiscard]] inline ValidationIssues validate(const OrderExecution &execution) {
     ValidationIssues issues;
     if (execution.executed_quantity.is_zero()) {
         add_issue(issues, "zero_execution_quantity", "Order execution quantity must be positive");
@@ -111,7 +112,7 @@ inline void add_issue(ValidationIssues& issues, std::string code, std::string me
     return issues;
 }
 
-[[nodiscard]] inline ValidationIssues validate(const Quote& quote) {
+[[nodiscard]] inline ValidationIssues validate(const Quote &quote) {
     ValidationIssues issues;
     if (quote.bid_price.has_value() != quote.bid_quantity.has_value()) {
         add_issue(issues, "incomplete_bid", "Bid price and quantity must be present together");
@@ -125,7 +126,7 @@ inline void add_issue(ValidationIssues& issues, std::string code, std::string me
     return issues;
 }
 
-[[nodiscard]] inline ValidationIssues validate(const Bar& bar) {
+[[nodiscard]] inline ValidationIssues validate(const Bar &bar) {
     ValidationIssues issues;
     if (bar.interval_end <= bar.interval_start) {
         add_issue(issues, "invalid_bar_interval", "Bar interval end must be after its start");

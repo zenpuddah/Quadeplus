@@ -20,29 +20,29 @@ void require(const bool condition, const std::string_view message) {
 }
 
 template <typename Function>
-void require_throws(Function&& function, const std::string_view message) {
+void require_throws(Function &&function, const std::string_view message) {
     bool threw = false;
     try {
         function();
-    } catch (const std::invalid_argument&) {
+    } catch (const std::invalid_argument &) {
         threw = true;
     }
     require(threw, message);
 }
 
 template <typename Function>
-void require_throws_exception(Function&& function, const std::string_view message) {
+void require_throws_exception(Function &&function, const std::string_view message) {
     bool threw = false;
     try {
         function();
-    } catch (const std::exception&) {
+    } catch (const std::exception &) {
         threw = true;
     }
     require(threw, message);
 }
 
-bool contains_code(const ValidationIssues& issues, const std::string_view code) {
-    for (const auto& issue : issues) {
+bool contains_code(const ValidationIssues &issues, const std::string_view code) {
+    for (const auto &issue : issues) {
         if (issue.code == code) {
             return true;
         }
@@ -56,22 +56,13 @@ Timestamp time(const std::int64_t nanos) {
 
 EventHeader header() {
     return EventHeader{
-        InstrumentId{1},
-        VenueId{1},
-        time(100),
-        time(110),
-        std::uint64_t{7},
-        std::uint32_t{2},
-        std::uint64_t{0},
-        SourceId{1},
+        InstrumentId{1},  VenueId{1},       time(100),        time(110),
+        std::uint64_t{7}, std::uint32_t{2}, std::uint64_t{0}, SourceId{1},
     };
 }
 
-ReferenceVersion reference(
-    const InstrumentId id,
-    const Timestamp from,
-    const std::optional<Timestamp> until,
-    const std::string_view symbol) {
+ReferenceVersion reference(const InstrumentId id, const Timestamp from,
+                           const std::optional<Timestamp> until, const std::string_view symbol) {
     return ReferenceVersion{
         id,
         from,
@@ -93,7 +84,8 @@ void test_value_types() {
             "price normalization must be scale-independent");
     require(Price::from_decimal(120, 2) > Price::from_decimal(119, 2),
             "price ordering must be exact");
-    require(Price::from_decimal(-1, 0) < Price::from_raw(0), "negative price must compare below zero");
+    require(Price::from_decimal(-1, 0) < Price::from_raw(0),
+            "negative price must compare below zero");
     require(Price::from_decimal(1, 3) < Price::from_decimal(1, 2),
             "decimal scale must affect value ordering");
     require(Price::from_decimal(0, 18) == Price::from_raw(0),
@@ -107,18 +99,20 @@ void test_value_types() {
     require(Quantity::from_integer(1'000'000'000).raw() == 1'000'000'000'000'000LL,
             "quantity scale must retain billion-unit Phase 1 values");
     require(sizeof(VenueId) == sizeof(std::uint32_t), "venue ids must use compact 32-bit storage");
-    require(sizeof(SourceId) == sizeof(std::uint32_t), "source ids must use compact 32-bit storage");
+    require(sizeof(SourceId) == sizeof(std::uint32_t),
+            "source ids must use compact 32-bit storage");
 
     require((Price::from_decimal(1, 2) + Price::from_decimal(2, 2)) == Price::from_decimal(3, 2),
             "price addition must use checked canonical units");
     require((Quantity::from_integer(3) - Quantity::from_integer(1)) == Quantity::from_integer(2),
             "quantity subtraction must use checked canonical units");
     require_throws_exception(
-        [] { (void)(Price::from_raw(std::numeric_limits<std::int64_t>::max()) + Price::from_raw(1)); },
+        [] {
+            (void)(Price::from_raw(std::numeric_limits<std::int64_t>::max()) + Price::from_raw(1));
+        },
         "price arithmetic overflow must be rejected");
-    require_throws_exception(
-        [] { (void)(Quantity::from_raw(0) - Quantity::from_raw(1)); },
-        "quantity arithmetic underflow must be rejected");
+    require_throws_exception([] { (void)(Quantity::from_raw(0) - Quantity::from_raw(1)); },
+                             "quantity arithmetic underflow must be rejected");
 
     const auto usd = Money::from_decimal(CurrencyCode{"USD"}, DecimalInput{12345, 2});
     const auto usd_change = Money::from_decimal(CurrencyCode{"USD"}, DecimalInput{55, 2});
@@ -133,10 +127,10 @@ void test_value_types() {
     require_throws([] { VenueId{0}; }, "zero venue id must be rejected");
     require_throws([] { SourceId{0}; }, "zero source id must be rejected");
     require_throws([] { CurrencyCode{"usd"}; }, "lowercase currency code must be rejected");
-    require_throws(
-        [] { (void)Price::from_decimal(1, 10); },
-        "non-exact decimal downscaling must be rejected");
-    require_throws([] { (void)Quantity::from_decimal(-1, 0); }, "negative quantity must be rejected");
+    require_throws([] { (void)Price::from_decimal(1, 10); },
+                   "non-exact decimal downscaling must be rejected");
+    require_throws([] { (void)Quantity::from_decimal(-1, 0); },
+                   "negative quantity must be rejected");
     require_throws_exception(
         [] { (void)Price::from_decimal(std::numeric_limits<std::int64_t>::max(), 0); },
         "canonical decimal overflow must be rejected");
@@ -145,23 +139,20 @@ void test_value_types() {
     venues.add(VenueReference{VenueId{1}, "XNAS"});
     require(venues.find(VenueId{1}) != nullptr, "venue reference must be keyed by compact id");
     require(venues.find(VenueId{1})->code == "XNAS", "venue code must live in the reference table");
-    require_throws(
-        [&] { venues.add(VenueReference{VenueId{1}, "OTHER"}); },
-        "venue reference ids must be unique");
-    require_throws(
-        [&] { venues.add(VenueReference{VenueId{2}, ""}); },
-        "venue reference codes must not be empty");
+    require_throws([&] { venues.add(VenueReference{VenueId{1}, "OTHER"}); },
+                   "venue reference ids must be unique");
+    require_throws([&] { venues.add(VenueReference{VenueId{2}, ""}); },
+                   "venue reference codes must not be empty");
 
     SourceMetadataTable sources;
     sources.add(SourceMetadata{SourceId{1}, "databento", "test", "mbo"});
     require(sources.find(SourceId{1}) != nullptr, "source metadata must be keyed by compact id");
-    require(sources.find(SourceId{1})->provider == "databento", "source provider must live in the metadata table");
-    require_throws(
-        [&] { sources.add(SourceMetadata{SourceId{1}, "other", "test", "mbo"}); },
-        "source metadata ids must be unique");
-    require_throws(
-        [&] { sources.add(SourceMetadata{SourceId{2}, "", "test", "mbo"}); },
-        "source metadata providers must not be empty");
+    require(sources.find(SourceId{1})->provider == "databento",
+            "source provider must live in the metadata table");
+    require_throws([&] { sources.add(SourceMetadata{SourceId{1}, "other", "test", "mbo"}); },
+                   "source metadata ids must be unique");
+    require_throws([&] { sources.add(SourceMetadata{SourceId{2}, "", "test", "mbo"}); },
+                   "source metadata providers must not be empty");
 }
 
 void test_reference_history() {
@@ -189,15 +180,13 @@ void test_reference_history() {
     require_throws(
         [&] { history.append(reference(InstrumentId{2}, time(20), std::nullopt, "OTHER")); },
         "reference history must not mix instruments");
-    require_throws(
-        [&] { history.append(reference(id, time(20), std::nullopt, "LATE")); },
-        "reference history must not append after an open interval");
+    require_throws([&] { history.append(reference(id, time(20), std::nullopt, "LATE")); },
+                   "reference history must not append after an open interval");
 
     ReferenceHistory overlapping{id};
     overlapping.append(reference(id, time(0), time(10), "ABC"));
-    require_throws(
-        [&] { overlapping.append(reference(id, time(9), std::nullopt, "OVERLAP")); },
-        "reference validity intervals must not overlap");
+    require_throws([&] { overlapping.append(reference(id, time(9), std::nullopt, "OVERLAP")); },
+                   "reference validity intervals must not overlap");
 }
 
 void test_mbo_events() {
@@ -206,45 +195,27 @@ void test_mbo_events() {
     const auto quantity = Quantity::from_integer(10);
 
     const MboEvent add{
-        event_header,
-        MboAction::Add,
-        OrderId{100},
-        Side::Buy,
-        price,
-        quantity,
+        event_header, MboAction::Add, OrderId{100}, Side::Buy, price, quantity,
     };
     require(add.has_complete_order_state(), "complete add must expose complete order state");
     require(is_valid(validate(add)), "complete add must validate");
 
     const MboEvent clear{
-        event_header,
-        MboAction::Clear,
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
+        event_header, MboAction::Clear, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
     };
     require(is_valid(validate(clear)), "empty clear must validate");
 
     const MboEvent incomplete_add{
-        event_header,
-        MboAction::Add,
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
+        event_header, MboAction::Add, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
     };
     const auto add_issues = validate(incomplete_add);
-    require(contains_code(add_issues, "missing_order_id"), "incomplete add must report missing order id");
-    require(contains_code(add_issues, "incomplete_add"), "incomplete add must report missing order fields");
+    require(contains_code(add_issues, "missing_order_id"),
+            "incomplete add must report missing order id");
+    require(contains_code(add_issues, "incomplete_add"),
+            "incomplete add must report missing order fields");
 
     const MboEvent invalid_clear{
-        event_header,
-        MboAction::Clear,
-        OrderId{101},
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
+        event_header, MboAction::Clear, OrderId{101}, std::nullopt, std::nullopt, std::nullopt,
     };
     require(contains_code(validate(invalid_clear), "clear_has_order_fields"),
             "clear must not carry order fields");
@@ -261,17 +232,21 @@ void test_mbo_events() {
     require(buffer.data() != nullptr, "non-empty MBO buffer must expose contiguous records");
     require(reinterpret_cast<std::uintptr_t>(buffer.data()) % alignof(MboRecord) == 0,
             "MBO buffer data must honor the record alignment");
-    require(
-        reinterpret_cast<std::uintptr_t>(buffer.data() + 1) - reinterpret_cast<std::uintptr_t>(buffer.data()) ==
-            sizeof(MboRecord),
-        "MBO buffer records must have a constant physical stride");
+    require(reinterpret_cast<std::uintptr_t>(buffer.data() + 1) -
+                    reinterpret_cast<std::uintptr_t>(buffer.data()) ==
+                sizeof(MboRecord),
+            "MBO buffer records must have a constant physical stride");
     require(buffer.at(0).action() == MboAction::Add, "MBO view must decode the action tag");
-    require(buffer.at(0).header().venue_id == VenueId{1}, "MBO view must restore compact venue context");
-    require(buffer.at(0).header().source_id == SourceId{1}, "MBO view must restore compact source context");
+    require(buffer.at(0).header().venue_id == VenueId{1},
+            "MBO view must restore compact venue context");
+    require(buffer.at(0).header().source_id == SourceId{1},
+            "MBO view must restore compact source context");
     require(buffer.at(0).order_id()->value() == 100, "MBO view must decode the order id");
-    require(buffer.at(0).price()->raw() == price.raw(), "MBO view must decode canonical price units");
+    require(buffer.at(0).price()->raw() == price.raw(),
+            "MBO view must decode canonical price units");
     require(buffer.at(0).as_add().has_value(), "MBO view must expose a typed add view");
-    require(buffer.at(1).as_modify()->side == Side::Sell, "MBO view must expose a typed modify view");
+    require(buffer.at(1).as_modify()->side == Side::Sell,
+            "MBO view must expose a typed modify view");
     require(buffer.at(2).as_cancel()->quantity.raw() == Quantity::from_integer(2).raw(),
             "MBO view must expose a typed cancel view");
     require(buffer.at(3).as_execute()->quantity.raw() == Quantity::from_integer(3).raw(),
@@ -282,24 +257,23 @@ void test_mbo_events() {
 
     std::size_t iterated = 0;
     for (const auto view : buffer) {
-        require(view.event().header.source_id == SourceId{1}, "buffer iteration must preserve source identity");
+        require(view.event().header.source_id == SourceId{1},
+                "buffer iteration must preserve source identity");
         ++iterated;
     }
-    require(iterated == buffer.size(), "MBO buffer iteration must use the fixed contiguous sequence");
+    require(iterated == buffer.size(),
+            "MBO buffer iteration must use the fixed contiguous sequence");
 
     EventHeader edge_header{
-        InstrumentId{1},
-        VenueId{1},
-        time(-7),
-        time(std::numeric_limits<std::int64_t>::min()),
-        std::uint64_t{0},
-        std::uint32_t{0},
-        std::uint64_t{9},
-        SourceId{1},
+        InstrumentId{1},  VenueId{1},
+        time(-7),         time(std::numeric_limits<std::int64_t>::min()),
+        std::uint64_t{0}, std::uint32_t{0},
+        std::uint64_t{9}, SourceId{1},
     };
     MboBuffer edge_buffer{MboStreamContext{InstrumentId{1}, VenueId{1}, SourceId{1}}};
     edge_buffer.append(MboClear{edge_header});
-    require(edge_buffer.at(0).source_receive_time()->unix_nanos() == std::numeric_limits<std::int64_t>::min(),
+    require(edge_buffer.at(0).source_receive_time()->unix_nanos() ==
+                std::numeric_limits<std::int64_t>::min(),
             "MBO presence bits must preserve the full receive timestamp range");
     require(edge_buffer.at(0).sequence() == std::optional<std::uint64_t>{0},
             "MBO presence bits must preserve zero sequence values");
@@ -308,7 +282,8 @@ void test_mbo_events() {
 
     require_throws(
         [&] {
-            buffer.append(MboModify{event_header, OrderId{100}, std::nullopt, std::nullopt, std::nullopt});
+            buffer.append(
+                MboModify{event_header, OrderId{100}, std::nullopt, std::nullopt, std::nullopt});
         },
         "empty typed modify must be rejected");
     require_throws(
@@ -334,7 +309,8 @@ void test_mbo_events() {
 
     MboBuffer logical_buffer{MboStreamContext{InstrumentId{1}, VenueId{1}, SourceId{1}}};
     logical_buffer.append(add);
-    require(logical_buffer.at(0).as_add().has_value(), "logical MBO events must normalize into the fixed buffer");
+    require(logical_buffer.at(0).as_add().has_value(),
+            "logical MBO events must normalize into the fixed buffer");
 }
 
 void test_trade_quote_and_bar() {
@@ -402,7 +378,7 @@ int main() {
         test_mbo_events();
         test_trade_quote_and_bar();
         std::cout << "data_model_tests: passed\n";
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << "data_model_tests: failed: " << error.what() << '\n';
         return 1;
     }

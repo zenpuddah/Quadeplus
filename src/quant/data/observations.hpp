@@ -15,13 +15,14 @@ struct EventHeader {
     InstrumentId instrument_id;
     VenueId venue_id;
     Timestamp event_time;
-    std::optional<Timestamp> source_receive_time; // Provider/source receive time, not local arrival time.
+    std::optional<Timestamp>
+        source_receive_time; // Provider/source receive time, not local arrival time.
     std::optional<std::uint64_t> sequence;
     std::optional<std::uint32_t> channel_id;
     std::uint64_t source_flags;
     SourceId source_id;
 
-    friend bool operator==(const EventHeader&, const EventHeader&) = default;
+    friend bool operator==(const EventHeader &, const EventHeader &) = default;
 };
 
 struct MboEvent {
@@ -121,14 +122,10 @@ inline constexpr std::uint32_t quantity_present = 1U << 9U;
 inline constexpr std::uint32_t sell_side = 1U << 10U;
 
 [[nodiscard]] inline std::uint32_t encode_control(
-    const MboAction action,
-    const std::optional<Timestamp>& source_receive_time,
-    const std::optional<std::uint64_t>& sequence,
-    const std::optional<std::uint32_t>& channel_id,
-    const std::optional<OrderId>& order_id,
-    const std::optional<Side>& side,
-    const std::optional<Price>& price,
-    const std::optional<Quantity>& quantity) noexcept {
+    const MboAction action, const std::optional<Timestamp> &source_receive_time,
+    const std::optional<std::uint64_t> &sequence, const std::optional<std::uint32_t> &channel_id,
+    const std::optional<OrderId> &order_id, const std::optional<Side> &side,
+    const std::optional<Price> &price, const std::optional<Quantity> &quantity) noexcept {
     auto control = static_cast<std::uint32_t>(action) & action_mask;
     if (source_receive_time) {
         control |= source_receive_time_present;
@@ -168,9 +165,13 @@ inline constexpr std::uint32_t sell_side = 1U << 10U;
 } // namespace mbo_detail
 
 class MboRecordView {
-public:
-    [[nodiscard]] const MboRecord& record() const noexcept { return *record_; }
-    [[nodiscard]] MboAction action() const noexcept { return mbo_detail::decode_action(record_->control); }
+  public:
+    [[nodiscard]] const MboRecord &record() const noexcept {
+        return *record_;
+    }
+    [[nodiscard]] MboAction action() const noexcept {
+        return mbo_detail::decode_action(record_->control);
+    }
 
     [[nodiscard]] EventHeader header() const {
         return EventHeader{
@@ -234,7 +235,9 @@ public:
         return Quantity::from_raw(record_->quantity);
     }
 
-    [[nodiscard]] std::uint64_t source_flags() const noexcept { return record_->source_flags; }
+    [[nodiscard]] std::uint64_t source_flags() const noexcept {
+        return record_->source_flags;
+    }
 
     [[nodiscard]] MboEvent event() const {
         return MboEvent{header(), action(), order_id(), side(), price(), quantity()};
@@ -290,110 +293,100 @@ public:
     }
 
     [[nodiscard]] std::optional<MboClear> as_clear() const {
-        return action() == MboAction::Clear ? std::optional<MboClear>{MboClear{header()}} : std::nullopt;
+        return action() == MboAction::Clear ? std::optional<MboClear>{MboClear{header()}}
+                                            : std::nullopt;
     }
 
-private:
-    MboRecordView(const MboRecord* record, const MboStreamContext* context) noexcept
+  private:
+    MboRecordView(const MboRecord *record, const MboStreamContext *context) noexcept
         : record_(record), context_(context) {}
 
-    const MboRecord* record_;
-    const MboStreamContext* context_;
+    const MboRecord *record_;
+    const MboStreamContext *context_;
 
     friend class MboBuffer;
 };
 
 class MboBuffer {
-public:
+  public:
     class const_iterator {
-    public:
+      public:
         using iterator_category = std::forward_iterator_tag;
         using value_type = MboRecordView;
         using difference_type = std::ptrdiff_t;
 
-        [[nodiscard]] MboRecordView operator*() const noexcept { return owner_->view_at(index_); }
+        [[nodiscard]] MboRecordView operator*() const noexcept {
+            return owner_->view_at(index_);
+        }
 
-        const_iterator& operator++() noexcept {
+        const_iterator &operator++() noexcept {
             ++index_;
             return *this;
         }
 
-        friend bool operator==(const const_iterator&, const const_iterator&) = default;
+        friend bool operator==(const const_iterator &, const const_iterator &) = default;
 
-    private:
-        const_iterator(const MboBuffer* owner, const std::size_t index) noexcept : owner_(owner), index_(index) {}
+      private:
+        const_iterator(const MboBuffer *owner, const std::size_t index) noexcept
+            : owner_(owner), index_(index) {}
 
-        const MboBuffer* owner_;
+        const MboBuffer *owner_;
         std::size_t index_;
 
         friend class MboBuffer;
     };
 
-    explicit MboBuffer(const MboStreamContext context, const std::size_t initial_capacity = 0) : context_(context) {
+    explicit MboBuffer(const MboStreamContext context, const std::size_t initial_capacity = 0)
+        : context_(context) {
         records_.reserve(initial_capacity);
     }
 
-    void append(const MboAdd& event) {
-        append_record(
-            event.header,
-            MboAction::Add,
-            std::optional<OrderId>{event.order_id},
-            std::optional<Side>{event.side},
-            std::optional<Price>{event.price},
-            std::optional<Quantity>{event.quantity});
+    void append(const MboAdd &event) {
+        append_record(event.header, MboAction::Add, std::optional<OrderId>{event.order_id},
+                      std::optional<Side>{event.side}, std::optional<Price>{event.price},
+                      std::optional<Quantity>{event.quantity});
     }
 
-    void append(const MboModify& event) {
+    void append(const MboModify &event) {
         if (!event.side && !event.price && !event.quantity) {
             throw std::invalid_argument("MboModify requires at least one changed order field");
         }
-        append_record(
-            event.header,
-            MboAction::Modify,
-            std::optional<OrderId>{event.order_id},
-            event.side,
-            event.price,
-            event.quantity);
+        append_record(event.header, MboAction::Modify, std::optional<OrderId>{event.order_id},
+                      event.side, event.price, event.quantity);
     }
 
-    void append(const MboCancel& event) {
-        append_record(
-            event.header,
-            MboAction::Cancel,
-            std::optional<OrderId>{event.order_id},
-            std::nullopt,
-            std::nullopt,
-            std::optional<Quantity>{event.quantity});
+    void append(const MboCancel &event) {
+        append_record(event.header, MboAction::Cancel, std::optional<OrderId>{event.order_id},
+                      std::nullopt, std::nullopt, std::optional<Quantity>{event.quantity});
     }
 
-    void append(const MboExecute& event) {
-        append_record(
-            event.header,
-            MboAction::Execute,
-            std::optional<OrderId>{event.order_id},
-            std::nullopt,
-            std::nullopt,
-            std::optional<Quantity>{event.quantity});
+    void append(const MboExecute &event) {
+        append_record(event.header, MboAction::Execute, std::optional<OrderId>{event.order_id},
+                      std::nullopt, std::nullopt, std::optional<Quantity>{event.quantity});
     }
 
-    void append(const MboClear& event) {
-        append_record(event.header, MboAction::Clear, std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+    void append(const MboClear &event) {
+        append_record(event.header, MboAction::Clear, std::nullopt, std::nullopt, std::nullopt,
+                      std::nullopt);
     }
 
-    // This overload keeps the logical record useful at the adapter boundary; storage is still fixed-stride.
-    void append(const MboEvent& event) {
+    // This overload keeps the logical record useful at the adapter boundary; storage is still
+    // fixed-stride.
+    void append(const MboEvent &event) {
         switch (event.action) {
         case MboAction::Add:
             if (!event.order_id || !event.side || !event.price || !event.quantity) {
                 throw std::invalid_argument("MboEvent Add is incomplete");
             }
-            append(MboAdd{event.header, *event.order_id, *event.side, *event.price, *event.quantity});
+            append(
+                MboAdd{event.header, *event.order_id, *event.side, *event.price, *event.quantity});
             break;
         case MboAction::Modify:
             if (!event.order_id || (!event.side && !event.price && !event.quantity)) {
                 throw std::invalid_argument("MboEvent Modify is incomplete");
             }
-            append(MboModify{event.header, *event.order_id, event.side, event.price, event.quantity});
+            append(
+                MboModify{event.header, *event.order_id, event.side, event.price, event.quantity});
             break;
         case MboAction::Cancel:
             if (!event.order_id || !event.quantity) {
@@ -418,12 +411,22 @@ public:
         }
     }
 
-    [[nodiscard]] const MboStreamContext& context() const noexcept { return context_; }
-    [[nodiscard]] std::size_t size() const noexcept { return records_.size(); }
-    [[nodiscard]] bool empty() const noexcept { return records_.empty(); }
-    [[nodiscard]] const MboRecord* data() const noexcept { return records_.data(); }
+    [[nodiscard]] const MboStreamContext &context() const noexcept {
+        return context_;
+    }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return records_.size();
+    }
+    [[nodiscard]] bool empty() const noexcept {
+        return records_.empty();
+    }
+    [[nodiscard]] const MboRecord *data() const noexcept {
+        return records_.data();
+    }
 
-    [[nodiscard]] MboRecordView operator[](const std::size_t index) const noexcept { return view_at(index); }
+    [[nodiscard]] MboRecordView operator[](const std::size_t index) const noexcept {
+        return view_at(index);
+    }
 
     [[nodiscard]] MboRecordView at(const std::size_t index) const {
         if (index >= records_.size()) {
@@ -432,19 +435,19 @@ public:
         return view_at(index);
     }
 
-    [[nodiscard]] const_iterator begin() const noexcept { return const_iterator(this, 0); }
-    [[nodiscard]] const_iterator end() const noexcept { return const_iterator(this, records_.size()); }
+    [[nodiscard]] const_iterator begin() const noexcept {
+        return const_iterator(this, 0);
+    }
+    [[nodiscard]] const_iterator end() const noexcept {
+        return const_iterator(this, records_.size());
+    }
 
-private:
-    void append_record(
-        const EventHeader& header,
-        const MboAction action,
-        const std::optional<OrderId>& order_id,
-        const std::optional<Side>& side,
-        const std::optional<Price>& price,
-        const std::optional<Quantity>& quantity) {
-        if (header.instrument_id != context_.instrument_id || header.venue_id != context_.venue_id ||
-            header.source_id != context_.source_id) {
+  private:
+    void append_record(const EventHeader &header, const MboAction action,
+                       const std::optional<OrderId> &order_id, const std::optional<Side> &side,
+                       const std::optional<Price> &price, const std::optional<Quantity> &quantity) {
+        if (header.instrument_id != context_.instrument_id ||
+            header.venue_id != context_.venue_id || header.source_id != context_.source_id) {
             throw std::invalid_argument("MBO event scope does not match buffer context");
         }
         if (side && *side != Side::Buy && *side != Side::Sell) {
@@ -460,15 +463,8 @@ private:
             quantity ? quantity->raw() : 0,
             header.source_flags,
             header.channel_id.value_or(0),
-            mbo_detail::encode_control(
-                action,
-                header.source_receive_time,
-                header.sequence,
-                header.channel_id,
-                order_id,
-                side,
-                price,
-                quantity),
+            mbo_detail::encode_control(action, header.source_receive_time, header.sequence,
+                                       header.channel_id, order_id, side, price, quantity),
         });
     }
 
@@ -494,7 +490,8 @@ struct ProviderRecordMetadata {
     std::uint16_t provider_publisher_id;
     std::uint8_t provider_action;
 
-    friend bool operator==(const ProviderRecordMetadata&, const ProviderRecordMetadata&) = default;
+    friend bool operator==(const ProviderRecordMetadata &,
+                           const ProviderRecordMetadata &) = default;
 };
 
 struct Quote {

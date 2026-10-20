@@ -13,7 +13,8 @@ struct SourceArtifactProvenance {
     std::string artifact_identity;
     TimeRange range;
 
-    friend bool operator==(const SourceArtifactProvenance&, const SourceArtifactProvenance&) = default;
+    friend bool operator==(const SourceArtifactProvenance &,
+                           const SourceArtifactProvenance &) = default;
 };
 
 struct ProviderConditionEvidence {
@@ -21,7 +22,8 @@ struct ProviderConditionEvidence {
     std::string condition;
     std::optional<std::string> last_modified_date;
 
-    friend bool operator==(const ProviderConditionEvidence&, const ProviderConditionEvidence&) = default;
+    friend bool operator==(const ProviderConditionEvidence &,
+                           const ProviderConditionEvidence &) = default;
 };
 
 struct ProviderBatchMetadata {
@@ -33,7 +35,7 @@ struct ProviderBatchMetadata {
     std::vector<std::string> partial_symbols;
     std::vector<std::string> not_found_symbols;
 
-    friend bool operator==(const ProviderBatchMetadata&, const ProviderBatchMetadata&) = default;
+    friend bool operator==(const ProviderBatchMetadata &, const ProviderBatchMetadata &) = default;
 };
 
 enum class AcquisitionMode {

@@ -1,5 +1,21 @@
 # Verification and limits
 
+## Formatting and lint update — 2026-10-20
+
+The formatted public tree passes the pinned [style checks](contributing.md),
+including Python lint and a no-change formatter check. A fresh Debug storage build
+passes **14/14 core/storage tests** with AppleClang 21 and Arrow/Parquet 26.0.0;
+the benchmark target also compiles. Lexongine's four external reader/integration
+tests pass against the same formatted headers. The shared canonical headers and
+file-integrity helper remain byte-identical across both public repositories.
+
+All 43 existing C++ files reproduce exactly from the pinned formatter applied to
+the preceding release source. CMake token sequences and the Python inspector AST
+are unchanged. GitHub Actions checks formatting and Python lint; native runtime
+verification is the separate macOS profile described here.
+
+## Initial v1.0.0 verification
+
 The standalone source release passed **14/14 core and storage tests** in both normal
 and ASan/UBSan builds on macOS arm64 with AppleClang 21 and Arrow/Parquet 26.0.0.
 The dependency-free profile passed **10/10** tests. Lexongine's four checked-reader

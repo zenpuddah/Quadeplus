@@ -22,11 +22,11 @@ void require(const bool condition, const std::string_view message) {
 }
 
 template <typename Function>
-void require_throws(Function&& function, const std::string_view message) {
+void require_throws(Function &&function, const std::string_view message) {
     bool threw = false;
     try {
         function();
-    } catch (const std::exception&) {
+    } catch (const std::exception &) {
         threw = true;
     }
     require(threw, message);
@@ -40,18 +40,11 @@ TimeRange range(const std::int64_t start, const std::int64_t end) {
     return TimeRange{time(start), time(end)};
 }
 
-ProviderMappingSegment mapping(
-    const std::int64_t start,
-    const std::int64_t end,
-    const std::string_view symbol) {
+ProviderMappingSegment mapping(const std::int64_t start, const std::int64_t end,
+                               const std::string_view symbol) {
     return ProviderMappingSegment{
-        InstrumentId{42},
-        "test-provider",
-        std::string{symbol},
-        VenueId{7},
-        std::nullopt,
-        range(start, end),
-        SourceId{9},
+        InstrumentId{42}, "test-provider",   std::string{symbol}, VenueId{7},
+        std::nullopt,     range(start, end), SourceId{9},
     };
 }
 
@@ -72,7 +65,8 @@ void test_one_segment_plan() {
     require(result.segments.size() == 1, "one mapping interval must produce one plan segment");
     require(result.segments[0].mapping.range == range(10, 20),
             "the plan must retain the resolved event-time mapping range");
-    require(result.segments[0].provider_query.event_time_range == std::optional<TimeRange>{range(10, 20)},
+    require(result.segments[0].provider_query.event_time_range ==
+                std::optional<TimeRange>{range(10, 20)},
             "provider execution must receive the mapping-clipped event range");
     require(result.segments[0].provider_fetch_range ==
                 ProviderFetchRange{TimeBasis::SourceReceiveTime, range(10, 20)},
@@ -90,11 +84,15 @@ void test_mapping_boundary_plan() {
 
     const auto result = planner.plan(query(range(5, 15)));
     require(result.segments.size() == 2, "a mapping boundary must produce two plan segments");
-    require(result.segments[0].mapping.range == range(5, 10), "the first plan segment must be half-open at the boundary");
-    require(result.segments[1].mapping.range == range(10, 15), "the second plan segment must start at the boundary");
-    require(result.segments[0].provider_query.event_time_range == std::optional<TimeRange>{range(5, 10)},
+    require(result.segments[0].mapping.range == range(5, 10),
+            "the first plan segment must be half-open at the boundary");
+    require(result.segments[1].mapping.range == range(10, 15),
+            "the second plan segment must start at the boundary");
+    require(result.segments[0].provider_query.event_time_range ==
+                std::optional<TimeRange>{range(5, 10)},
             "the first provider query must be clipped to its mapping segment");
-    require(result.segments[1].provider_query.event_time_range == std::optional<TimeRange>{range(10, 15)},
+    require(result.segments[1].provider_query.event_time_range ==
+                std::optional<TimeRange>{range(10, 15)},
             "the second provider query must be clipped to its mapping segment");
 }
 
@@ -114,11 +112,13 @@ void test_dual_ranges_and_provider_derivation() {
         FetchPolicy::RequireExplicitRange,
     };
     const auto explicit_plan = planner.plan(dual_range_query);
-    require(explicit_plan.segments.size() == 1, "dual ranges must still produce one mapping segment");
+    require(explicit_plan.segments.size() == 1,
+            "dual ranges must still produce one mapping segment");
     require(explicit_plan.segments[0].provider_fetch_range ==
                 ProviderFetchRange{TimeBasis::SourceReceiveTime, range(12, 32)},
             "an explicit source receive range must be the provider fetch range");
-    require(explicit_plan.segments[0].post_fetch_filters == PostFetchFilters{range(10, 30), range(12, 32)},
+    require(explicit_plan.segments[0].post_fetch_filters ==
+                PostFetchFilters{range(10, 30), range(12, 32)},
             "dual ranges must remain post-fetch filters");
 
     const MarketDataQuery derived_query{
@@ -191,7 +191,8 @@ void test_execution_uses_the_explained_plan() {
     for (std::size_t index = 0; index < plan.segments.size(); ++index) {
         require(provider.calls()[index].range == plan.segments[index].mapping.range,
                 "provider mapping calls must follow the explained segment order");
-        require(provider.queries()[index].event_time_range == plan.segments[index].provider_query.event_time_range,
+        require(provider.queries()[index].event_time_range ==
+                    plan.segments[index].provider_query.event_time_range,
                 "provider queries must use the explained mapping-clipped event ranges");
     }
 }
@@ -206,7 +207,7 @@ int main() {
         test_receive_only_and_strict_event_queries_are_rejected();
         test_execution_uses_the_explained_plan();
         std::cout << "ingestion_query_plan_tests: passed\n";
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << "ingestion_query_plan_tests: failed: " << error.what() << '\n';
         return 1;
     }

@@ -5,22 +5,20 @@
 namespace {
 
 class FakeReader final : public quant::storage::MarketDataReader {
-public:
-    [[nodiscard]] arrow::Result<quant::storage::DatasetLocalMetadata> read_metadata(
-        const quant::storage::DataFragment&) const override {
+  public:
+    [[nodiscard]] arrow::Result<quant::storage::DatasetLocalMetadata>
+    read_metadata(const quant::storage::DataFragment &) const override {
         return arrow::Status::NotImplemented("fake reader");
     }
 
-    arrow::Status read_batches(
-        const quant::storage::DataFragment&,
-        quant::storage::BatchProjection,
-        const quant::storage::BatchConsumer&) const override {
+    arrow::Status read_batches(const quant::storage::DataFragment &,
+                               quant::storage::BatchProjection,
+                               const quant::storage::BatchConsumer &) const override {
         return arrow::Status::NotImplemented("fake reader");
     }
 
-    arrow::Status stream_events(
-        const quant::storage::DataFragment&,
-        const quant::storage::EventConsumer&) const override {
+    arrow::Status stream_events(const quant::storage::DataFragment &,
+                                const quant::storage::EventConsumer &) const override {
         return arrow::Status::NotImplemented("fake reader");
     }
 };

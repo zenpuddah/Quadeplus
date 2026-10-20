@@ -27,14 +27,14 @@ struct RecoveryPlan {
 };
 
 class RecoveryPolicy {
-public:
+  public:
     virtual ~RecoveryPolicy() = default;
-    [[nodiscard]] virtual RecoveryPlan decide(const RecoveryContext& context) const = 0;
+    [[nodiscard]] virtual RecoveryPlan decide(const RecoveryContext &context) const = 0;
 };
 
 class NoopRecoveryPolicy final : public RecoveryPolicy {
-public:
-    [[nodiscard]] RecoveryPlan decide(const RecoveryContext&) const override {
+  public:
+    [[nodiscard]] RecoveryPlan decide(const RecoveryContext &) const override {
         return RecoveryPlan{RecoveryAction::NoAction, {}};
     }
 };

@@ -29,21 +29,16 @@ TimeRange range(const std::int64_t start, const std::int64_t end) {
 
 EventHeader header() {
     return EventHeader{
-        InstrumentId{42},
-        VenueId{7},
-        time(10),
-        time(11),
-        std::uint64_t{3},
-        std::uint32_t{1},
-        std::uint64_t{9},
-        SourceId{5},
+        InstrumentId{42}, VenueId{7},       time(10),         time(11),
+        std::uint64_t{3}, std::uint32_t{1}, std::uint64_t{9}, SourceId{5},
     };
 }
 
 void test_result_keeps_intent_and_outcome_distinct() {
     const MarketDataQuery query{InstrumentId{42}, VenueId{7}, MarketDataLevel::L3, range(10, 20)};
     MboBuffer buffer{MboStreamContext{InstrumentId{42}, VenueId{7}, SourceId{5}}};
-    buffer.append(MboAdd{header(), OrderId{100}, Side::Buy, Price::from_integer(100), Quantity::from_integer(2)});
+    buffer.append(MboAdd{header(), OrderId{100}, Side::Buy, Price::from_integer(100),
+                         Quantity::from_integer(2)});
 
     IngestionMetadata metadata{
         query,
@@ -72,9 +67,8 @@ void test_result_keeps_intent_and_outcome_distinct() {
     buffers.push_back(std::move(buffer));
     const IngestionResult result{std::move(buffers), metadata, {}, {}};
 
-    require(
-        result.metadata.query.primary_range() == range(10, 20),
-        "metadata must retain the requested primary range");
+    require(result.metadata.query.primary_range() == range(10, 20),
+            "metadata must retain the requested primary range");
     require(result.metadata.actual_coverage ==
                 std::vector<DataStateSegment>{DataStateSegment{range(10, 15), DataState::Complete}},
             "metadata must retain actual coverage separately from the request");
@@ -83,11 +77,14 @@ void test_result_keeps_intent_and_outcome_distinct() {
             "metadata must retain unresolved ranges for partial results");
     require(result.metadata.data_state_segments.size() == 2,
             "metadata must retain range-local state segments");
-    require(result.metadata.data_state == DataState::Missing, "metadata must retain reduced data state");
+    require(result.metadata.data_state == DataState::Missing,
+            "metadata must retain reduced data state");
     require(result.metadata.acquisition_mode == AcquisitionMode::Historical,
             "ingestion metadata must identify historical acquisition");
-    require(result.mbo_buffers.size() == 1, "result must expose the canonical MBO buffer when data is valid");
-    require(result.mbo_buffers[0].size() == 1, "result MBO output must reuse the existing buffer representation");
+    require(result.mbo_buffers.size() == 1,
+            "result must expose the canonical MBO buffer when data is valid");
+    require(result.mbo_buffers[0].size() == 1,
+            "result MBO output must reuse the existing buffer representation");
     require(result.mbo_buffers[0].at(0).header().instrument_id == InstrumentId{42},
             "result MBO output must retain canonical identity");
 }
@@ -116,7 +113,8 @@ void test_metadata_versions_and_optional_artifact() {
                 std::vector<SourceArtifactProvenance>{{"artifact-checksum", range(0, 1)}},
             "source artifact provenance must retain identity and range metadata");
     require(metadata.adapter_version == "adapter-2", "adapter version must round-trip");
-    require(metadata.canonical_schema_version == "schema-3", "canonical schema version must round-trip");
+    require(metadata.canonical_schema_version == "schema-3",
+            "canonical schema version must round-trip");
     require(metadata.mapping_version == "mapping-4", "mapping version must round-trip");
     require(metadata.ingestion_time == time(2), "ingestion timestamp must round-trip");
     metadata.acquisition_mode = AcquisitionMode::Live;
@@ -131,7 +129,7 @@ int main() {
         test_result_keeps_intent_and_outcome_distinct();
         test_metadata_versions_and_optional_artifact();
         std::cout << "ingestion_result_tests: passed\n";
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << "ingestion_result_tests: failed: " << error.what() << '\n';
         return 1;
     }

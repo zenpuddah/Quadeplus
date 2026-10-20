@@ -20,17 +20,18 @@ struct CacheLookup {
 };
 
 class CachePort {
-public:
+  public:
     virtual ~CachePort() = default;
-    virtual CacheLookup lookup(const MarketDataQuery& query) = 0;
+    virtual CacheLookup lookup(const MarketDataQuery &query) = 0;
 };
 
 class NoopCache final : public CachePort {
-public:
-    [[nodiscard]] CacheLookup lookup(const MarketDataQuery& query) override {
+  public:
+    [[nodiscard]] CacheLookup lookup(const MarketDataQuery &query) override {
         validate(query);
         if (!query.event_time_range) {
-            throw std::invalid_argument("cache lookup requires an event-time range for mapping resolution");
+            throw std::invalid_argument(
+                "cache lookup requires an event-time range for mapping resolution");
         }
         return CacheLookup{CacheStatus::Miss, {}, {*query.event_time_range}};
     }

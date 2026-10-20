@@ -41,25 +41,23 @@ struct DataStateSegment {
 };
 
 class DataUsabilityPolicy {
-public:
+  public:
     virtual ~DataUsabilityPolicy() = default;
-    [[nodiscard]] virtual bool is_usable(
-        const MarketDataQuery& query,
-        const DataStateSegment& segment) const = 0;
+    [[nodiscard]] virtual bool is_usable(const MarketDataQuery &query,
+                                         const DataStateSegment &segment) const = 0;
 };
 
 class DefaultDataUsabilityPolicy final : public DataUsabilityPolicy {
-public:
-    [[nodiscard]] bool is_usable(
-        const MarketDataQuery&,
-        const DataStateSegment& segment) const override {
+  public:
+    [[nodiscard]] bool is_usable(const MarketDataQuery &,
+                                 const DataStateSegment &segment) const override {
         return segment.state == DataState::Complete || segment.state == DataState::Degraded;
     }
 };
 
-[[nodiscard]] inline bool same_stream_scope(
-    const std::optional<data::MboStreamContext>& lhs,
-    const std::optional<data::MboStreamContext>& rhs) noexcept {
+[[nodiscard]] inline bool
+same_stream_scope(const std::optional<data::MboStreamContext> &lhs,
+                  const std::optional<data::MboStreamContext> &rhs) noexcept {
     if (lhs.has_value() != rhs.has_value()) {
         return false;
     }
@@ -70,15 +68,17 @@ public:
            lhs->source_id == rhs->source_id;
 }
 
-[[nodiscard]] inline bool operator==(const DataStateSegment& lhs, const DataStateSegment& rhs) noexcept {
-    return lhs.range == rhs.range && lhs.state == rhs.state && same_stream_scope(lhs.scope, rhs.scope);
+[[nodiscard]] inline bool operator==(const DataStateSegment &lhs,
+                                     const DataStateSegment &rhs) noexcept {
+    return lhs.range == rhs.range && lhs.state == rhs.state &&
+           same_stream_scope(lhs.scope, rhs.scope);
 }
 
 namespace detail {
 
-[[nodiscard]] inline bool stream_scope_less(
-    const std::optional<data::MboStreamContext>& lhs,
-    const std::optional<data::MboStreamContext>& rhs) noexcept {
+[[nodiscard]] inline bool
+stream_scope_less(const std::optional<data::MboStreamContext> &lhs,
+                  const std::optional<data::MboStreamContext> &rhs) noexcept {
     if (lhs.has_value() != rhs.has_value()) {
         return !lhs.has_value();
     }
@@ -127,12 +127,11 @@ namespace detail {
     return 0;
 }
 
-[[nodiscard]] inline DataState reduce_interval(
-    const TimeRange interval,
-    const std::optional<data::MboStreamContext>& scope,
-    const std::span<const DataQualityObservation> observations) noexcept {
+[[nodiscard]] inline DataState
+reduce_interval(const TimeRange interval, const std::optional<data::MboStreamContext> &scope,
+                const std::span<const DataQualityObservation> observations) noexcept {
     auto state = DataState::Unknown;
-    for (const auto& observation : observations) {
+    for (const auto &observation : observations) {
         if (!same_stream_scope(observation.scope, scope)) {
             continue;
         }
@@ -149,38 +148,37 @@ namespace detail {
 } // namespace detail
 
 class DataStateReducer {
-public:
-    [[nodiscard]] static std::vector<DataStateSegment> reduce(
-        const TimeRange requested,
-        const std::initializer_list<DataQualityObservation> observations,
-        const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
+  public:
+    [[nodiscard]] static std::vector<DataStateSegment>
+    reduce(const TimeRange requested,
+           const std::initializer_list<DataQualityObservation> observations,
+           const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
         return reduce(
             requested,
             std::span<const DataQualityObservation>{observations.begin(), observations.size()},
             expected_scopes);
     }
 
-    [[nodiscard]] static std::vector<DataStateSegment> reduce(
-        const TimeRange requested,
-        const std::span<const DataQualityObservation> observations,
-        const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
+    [[nodiscard]] static std::vector<DataStateSegment>
+    reduce(const TimeRange requested, const std::span<const DataQualityObservation> observations,
+           const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
         validate(requested);
 
         std::vector<std::optional<data::MboStreamContext>> scopes;
         scopes.reserve(observations.size() + expected_scopes.size());
-        const auto add_scope = [&scopes](const std::optional<data::MboStreamContext>& scope) {
-            if (std::find_if(scopes.begin(), scopes.end(), [&scope](const auto& existing) {
+        const auto add_scope = [&scopes](const std::optional<data::MboStreamContext> &scope) {
+            if (std::find_if(scopes.begin(), scopes.end(), [&scope](const auto &existing) {
                     return same_stream_scope(existing, scope);
                 }) == scopes.end()) {
                 scopes.push_back(scope);
             }
         };
 
-        for (const auto& scope : expected_scopes) {
+        for (const auto &scope : expected_scopes) {
             add_scope(scope);
         }
 
-        for (const auto& observation : observations) {
+        for (const auto &observation : observations) {
             validate(observation.range);
             if (intersection(requested, observation.range)) {
                 add_scope(observation.scope);
@@ -193,9 +191,9 @@ public:
         std::sort(scopes.begin(), scopes.end(), detail::stream_scope_less);
 
         std::vector<DataStateSegment> segments;
-        for (const auto& scope : scopes) {
+        for (const auto &scope : scopes) {
             std::vector<data::Timestamp> boundaries{requested.start, requested.end};
-            for (const auto& observation : observations) {
+            for (const auto &observation : observations) {
                 if (!same_stream_scope(observation.scope, scope)) {
                     continue;
                 }
@@ -222,86 +220,69 @@ public:
     }
 
     [[nodiscard]] std::vector<DataStateSegment> operator()(
-        const TimeRange requested,
-        const std::span<const DataQualityObservation> observations,
+        const TimeRange requested, const std::span<const DataQualityObservation> observations,
         const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) const {
         return reduce(requested, observations, expected_scopes);
     }
 };
 
 [[nodiscard]] inline std::vector<DataStateSegment> reduce_data_state(
-    const TimeRange requested,
-    const std::span<const DataQualityObservation> observations,
+    const TimeRange requested, const std::span<const DataQualityObservation> observations,
     const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
     return DataStateReducer::reduce(requested, observations, expected_scopes);
 }
 
 [[nodiscard]] inline std::vector<DataStateSegment> reduce_data_state(
-    const TimeRange requested,
-    const std::initializer_list<DataQualityObservation> observations,
+    const TimeRange requested, const std::initializer_list<DataQualityObservation> observations,
     const std::span<const std::optional<data::MboStreamContext>> expected_scopes = {}) {
     return DataStateReducer::reduce(requested, observations, expected_scopes);
 }
 
-[[nodiscard]] inline const DataStateSegment* lookup_data_state(
-    const std::span<const DataStateSegment> segments,
-    const std::optional<data::MboStreamContext>& scope,
-    const data::Timestamp time) noexcept {
-    const auto first = std::lower_bound(
-        segments.begin(),
-        segments.end(),
-        scope,
-        [](const DataStateSegment& segment, const auto& target_scope) {
-            return detail::stream_scope_less(segment.scope, target_scope);
-        });
-    const auto last = std::upper_bound(
-        first,
-        segments.end(),
-        scope,
-        [](const auto& target_scope, const DataStateSegment& segment) {
-            return detail::stream_scope_less(target_scope, segment.scope);
-        });
+[[nodiscard]] inline const DataStateSegment *
+lookup_data_state(const std::span<const DataStateSegment> segments,
+                  const std::optional<data::MboStreamContext> &scope,
+                  const data::Timestamp time) noexcept {
+    const auto first =
+        std::lower_bound(segments.begin(), segments.end(), scope,
+                         [](const DataStateSegment &segment, const auto &target_scope) {
+                             return detail::stream_scope_less(segment.scope, target_scope);
+                         });
+    const auto last =
+        std::upper_bound(first, segments.end(), scope,
+                         [](const auto &target_scope, const DataStateSegment &segment) {
+                             return detail::stream_scope_less(target_scope, segment.scope);
+                         });
     const auto candidate = std::upper_bound(
-        first,
-        last,
-        time,
-        [](const data::Timestamp lookup_time, const DataStateSegment& segment) {
+        first, last, time, [](const data::Timestamp lookup_time, const DataStateSegment &segment) {
             return lookup_time < segment.range.start;
         });
     if (candidate == first) {
         return nullptr;
     }
-    const auto& segment = *(candidate - 1);
+    const auto &segment = *(candidate - 1);
     return segment.range.start <= time && time < segment.range.end ? &segment : nullptr;
 }
 
-[[nodiscard]] inline std::vector<DataStateSegment> lookup_data_state(
-    const std::span<const DataStateSegment> segments,
-    const std::optional<data::MboStreamContext>& scope,
-    const TimeRange requested) {
+[[nodiscard]] inline std::vector<DataStateSegment>
+lookup_data_state(const std::span<const DataStateSegment> segments,
+                  const std::optional<data::MboStreamContext> &scope, const TimeRange requested) {
     validate(requested);
-    const auto first = std::lower_bound(
-        segments.begin(),
-        segments.end(),
-        scope,
-        [](const DataStateSegment& segment, const auto& target_scope) {
-            return detail::stream_scope_less(segment.scope, target_scope);
-        });
-    const auto last = std::upper_bound(
-        first,
-        segments.end(),
-        scope,
-        [](const auto& target_scope, const DataStateSegment& segment) {
-            return detail::stream_scope_less(target_scope, segment.scope);
-        });
+    const auto first =
+        std::lower_bound(segments.begin(), segments.end(), scope,
+                         [](const DataStateSegment &segment, const auto &target_scope) {
+                             return detail::stream_scope_less(segment.scope, target_scope);
+                         });
+    const auto last =
+        std::upper_bound(first, segments.end(), scope,
+                         [](const auto &target_scope, const DataStateSegment &segment) {
+                             return detail::stream_scope_less(target_scope, segment.scope);
+                         });
 
-    auto iterator = std::lower_bound(
-        first,
-        last,
-        requested.start,
-        [](const DataStateSegment& segment, const data::Timestamp time) {
-            return segment.range.end <= time;
-        });
+    auto iterator =
+        std::lower_bound(first, last, requested.start,
+                         [](const DataStateSegment &segment, const data::Timestamp time) {
+                             return segment.range.end <= time;
+                         });
     if (iterator != first && (iterator - 1)->range.end > requested.start) {
         --iterator;
     }
@@ -315,10 +296,11 @@ public:
     return result;
 }
 
-[[nodiscard]] inline DataState summarize_data_state(const std::span<const DataStateSegment> segments) noexcept {
+[[nodiscard]] inline DataState
+summarize_data_state(const std::span<const DataStateSegment> segments) noexcept {
     auto summary = DataState::Unknown;
     auto severity = 0;
-    for (const auto& segment : segments) {
+    for (const auto &segment : segments) {
         int candidate_severity = 0;
         switch (segment.state) {
         case DataState::Complete:

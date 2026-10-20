@@ -21,16 +21,16 @@ struct StreamIdentity {
     data::InstrumentId instrument_id;
     data::VenueId venue_id;
     data::SourceId source_id;
-    friend bool operator==(const StreamIdentity&, const StreamIdentity&) = default;
+    friend bool operator==(const StreamIdentity &, const StreamIdentity &) = default;
 };
 
 struct StreamBinding {
     data::StreamId id;
     StreamIdentity stream;
-    friend bool operator==(const StreamBinding&, const StreamBinding&) = default;
+    friend bool operator==(const StreamBinding &, const StreamBinding &) = default;
 };
 
-inline void validate_token(const std::string& value) {
+inline void validate_token(const std::string &value) {
     if (value.empty() || value.size() > 128) {
         throw std::invalid_argument("identity token must contain 1..128 safe ASCII characters");
     }
@@ -43,9 +43,9 @@ inline void validate_token(const std::string& value) {
 }
 
 class StreamCatalog {
-public:
+  public:
     void add(const StreamBinding binding) {
-        for (const auto& entry : entries_) {
+        for (const auto &entry : entries_) {
             if (entry.id == binding.id) {
                 if (entry.stream != binding.stream) {
                     throw std::invalid_argument("StreamId reassignment is forbidden");
@@ -58,20 +58,27 @@ public:
         }
         entries_.push_back(binding);
     }
-    [[nodiscard]] const StreamBinding& at(const data::StreamId id) const {
-        for (const auto& entry : entries_) {
-            if (entry.id == id) { return entry; }
+    [[nodiscard]] const StreamBinding &at(const data::StreamId id) const {
+        for (const auto &entry : entries_) {
+            if (entry.id == id) {
+                return entry;
+            }
         }
         throw std::invalid_argument("unknown StreamId");
     }
-    [[nodiscard]] const StreamBinding& resolve(const StreamIdentity stream) const {
-        for (const auto& entry : entries_) {
-            if (entry.stream == stream) { return entry; }
+    [[nodiscard]] const StreamBinding &resolve(const StreamIdentity stream) const {
+        for (const auto &entry : entries_) {
+            if (entry.stream == stream) {
+                return entry;
+            }
         }
         throw std::invalid_argument("unresolved stream tuple");
     }
-    [[nodiscard]] const std::vector<StreamBinding>& entries() const noexcept { return entries_; }
-private:
+    [[nodiscard]] const std::vector<StreamBinding> &entries() const noexcept {
+        return entries_;
+    }
+
+  private:
     std::vector<StreamBinding> entries_;
 };
 
@@ -85,51 +92,70 @@ struct ReferenceSnapshot {
 
     void validate() const {
         validate_token(identity);
-        if (catalog.entries().empty()) { throw std::invalid_argument("empty reference catalog"); }
+        if (catalog.entries().empty()) {
+            throw std::invalid_argument("empty reference catalog");
+        }
         data::VenueReferenceTable venue_table;
-        for (const auto& venue : venues) { venue_table.add(venue); }
+        for (const auto &venue : venues) {
+            venue_table.add(venue);
+        }
         data::SourceMetadataTable source_table;
-        for (const auto& source : sources) {
+        for (const auto &source : sources) {
             if (source.dataset.empty() || source.schema.empty()) {
                 throw std::invalid_argument("source definition must retain dataset and schema");
             }
             source_table.add(source);
         }
-        for (const auto& binding : catalog.entries()) {
-            if (!venue_table.find(binding.stream.venue_id) || !source_table.find(binding.stream.source_id)) {
+        for (const auto &binding : catalog.entries()) {
+            if (!venue_table.find(binding.stream.venue_id) ||
+                !source_table.find(binding.stream.source_id)) {
                 throw std::invalid_argument("missing retained venue/source definition");
             }
             data::ReferenceHistory history{binding.stream.instrument_id};
-            for (const auto& instrument : instruments) {
-                if (instrument.instrument_id == binding.stream.instrument_id) { history.append(instrument); }
+            for (const auto &instrument : instruments) {
+                if (instrument.instrument_id == binding.stream.instrument_id) {
+                    history.append(instrument);
+                }
             }
-            if (history.size() == 0) { throw std::invalid_argument("missing instrument definition"); }
+            if (history.size() == 0) {
+                throw std::invalid_argument("missing instrument definition");
+            }
             bool mapped = false;
-            for (const auto& mapping : mappings) {
+            for (const auto &mapping : mappings) {
                 ingestion::validate(mapping);
                 if (mapping.instrument_id == binding.stream.instrument_id &&
-                    mapping.venue_id == binding.stream.venue_id && mapping.source_id == binding.stream.source_id) {
-                    const auto* source = source_table.find(binding.stream.source_id);
-                    if (source->provider != mapping.provider || (!mapping.symbol && !mapping.provider_id)) {
+                    mapping.venue_id == binding.stream.venue_id &&
+                    mapping.source_id == binding.stream.source_id) {
+                    const auto *source = source_table.find(binding.stream.source_id);
+                    if (source->provider != mapping.provider ||
+                        (!mapping.symbol && !mapping.provider_id)) {
                         throw std::invalid_argument("inconsistent source/mapping definition");
                     }
                     mapped = true;
                 }
             }
-            if (!mapped) { throw std::invalid_argument("missing retained mapping snapshot"); }
+            if (!mapped) {
+                throw std::invalid_argument("missing retained mapping snapshot");
+            }
         }
     }
 
-    void validate_header(const data::EventHeader& header) const {
-        static_cast<void>(catalog.resolve({header.instrument_id, header.venue_id, header.source_id}));
+    void validate_header(const data::EventHeader &header) const {
+        static_cast<void>(
+            catalog.resolve({header.instrument_id, header.venue_id, header.source_id}));
         data::ReferenceHistory history{header.instrument_id};
-        for (const auto& instrument : instruments) {
-            if (instrument.instrument_id == header.instrument_id) { history.append(instrument); }
+        for (const auto &instrument : instruments) {
+            if (instrument.instrument_id == header.instrument_id) {
+                history.append(instrument);
+            }
         }
-        if (!history.at(header.event_time)) { throw std::invalid_argument("reference unavailable at event time"); }
-        for (const auto& mapping : mappings) {
-            if (mapping.instrument_id == header.instrument_id && mapping.venue_id == header.venue_id &&
-                mapping.source_id == header.source_id && ingestion::contains(mapping.range, header.event_time)) {
+        if (!history.at(header.event_time)) {
+            throw std::invalid_argument("reference unavailable at event time");
+        }
+        for (const auto &mapping : mappings) {
+            if (mapping.instrument_id == header.instrument_id &&
+                mapping.venue_id == header.venue_id && mapping.source_id == header.source_id &&
+                ingestion::contains(mapping.range, header.event_time)) {
                 return;
             }
         }
@@ -143,7 +169,7 @@ enum class AcquisitionOutcome { Complete, Failed };
 struct RawRecord {
     std::uint64_t ordinal;
     std::vector<std::byte> bytes;
-    friend bool operator==(const RawRecord&, const RawRecord&) = default;
+    friend bool operator==(const RawRecord &, const RawRecord &) = default;
 };
 
 struct NativeBinding {
@@ -179,19 +205,19 @@ struct Acquisition {
 };
 
 class AcquisitionSink {
-public:
+  public:
     virtual ~AcquisitionSink() = default;
-    virtual void begin(const Acquisition& request) = 0;
-    virtual void metadata(const Acquisition& acquisition) = 0;
-    virtual void record(const RawRecord& record) = 0;
-    virtual void finish(const Acquisition& acquisition) = 0;
+    virtual void begin(const Acquisition &request) = 0;
+    virtual void metadata(const Acquisition &acquisition) = 0;
+    virtual void record(const RawRecord &record) = 0;
+    virtual void finish(const Acquisition &acquisition) = 0;
 };
 
 struct RowFailure {
     std::uint64_t ordinal;
     std::string rule;
     std::string reason;
-    friend bool operator==(const RowFailure&, const RowFailure&) = default;
+    friend bool operator==(const RowFailure &, const RowFailure &) = default;
 };
 
 struct BoundObservation {
@@ -200,25 +226,33 @@ struct BoundObservation {
     Observation event;
 };
 
-[[nodiscard]] inline const data::EventHeader& header(const Observation& observation) {
-    return std::visit([](const auto& event) -> const data::EventHeader& { return event.header; }, observation);
+[[nodiscard]] inline const data::EventHeader &header(const Observation &observation) {
+    return std::visit([](const auto &event) -> const data::EventHeader & { return event.header; },
+                      observation);
 }
 
-[[nodiscard]] inline bool same_observation(const Observation& lhs, const Observation& rhs) {
-    if (lhs.index() != rhs.index() || header(lhs) != header(rhs)) { return false; }
-    return std::visit([&rhs](const auto& left) {
-        using T = std::decay_t<decltype(left)>;
-        const auto& right = std::get<T>(rhs);
-        if constexpr (std::is_same_v<T, data::MboEvent>) {
-            return left.action == right.action && left.order_id == right.order_id && left.side == right.side &&
-                   left.price == right.price && left.quantity == right.quantity;
-        } else if constexpr (std::is_same_v<T, data::Trade>) {
-            return left.price == right.price && left.quantity == right.quantity && left.aggressor_side == right.aggressor_side;
-        } else {
-            return left.resting_order_id == right.resting_order_id && left.executed_quantity == right.executed_quantity &&
-                   left.price == right.price;
-        }
-    }, lhs);
+[[nodiscard]] inline bool same_observation(const Observation &lhs, const Observation &rhs) {
+    if (lhs.index() != rhs.index() || header(lhs) != header(rhs)) {
+        return false;
+    }
+    return std::visit(
+        [&rhs](const auto &left) {
+            using T = std::decay_t<decltype(left)>;
+            const auto &right = std::get<T>(rhs);
+            if constexpr (std::is_same_v<T, data::MboEvent>) {
+                return left.action == right.action && left.order_id == right.order_id &&
+                       left.side == right.side && left.price == right.price &&
+                       left.quantity == right.quantity;
+            } else if constexpr (std::is_same_v<T, data::Trade>) {
+                return left.price == right.price && left.quantity == right.quantity &&
+                       left.aggressor_side == right.aggressor_side;
+            } else {
+                return left.resting_order_id == right.resting_order_id &&
+                       left.executed_quantity == right.executed_quantity &&
+                       left.price == right.price;
+            }
+        },
+        lhs);
 }
 
 struct ValidationReport {
@@ -243,14 +277,20 @@ struct ConsumerRequirements {
     }
 };
 
-[[nodiscard]] inline bool eligible(
-    const ValidationReport& report, const ConsumerRequirements requirements,
-    const ingestion::MarketDataQuery& query, const ingestion::DataUsabilityPolicy& usability) {
-    if (report.structural != Check::Passed || (requirements.ordering && report.ordering != Check::Passed) ||
+[[nodiscard]] inline bool eligible(const ValidationReport &report,
+                                   const ConsumerRequirements requirements,
+                                   const ingestion::MarketDataQuery &query,
+                                   const ingestion::DataUsabilityPolicy &usability) {
+    if (report.structural != Check::Passed ||
+        (requirements.ordering && report.ordering != Check::Passed) ||
         (requirements.groups && report.groups != Check::Passed) ||
-        (requirements.initial_state && report.initial_state != Check::Passed) || report.data_states.empty()) { return false; }
-    for (const auto& segment : report.data_states) {
-        if (!usability.is_usable(query, segment) || (!requirements.allow_degraded && segment.state != ingestion::DataState::Complete)) {
+        (requirements.initial_state && report.initial_state != Check::Passed) ||
+        report.data_states.empty()) {
+        return false;
+    }
+    for (const auto &segment : report.data_states) {
+        if (!usability.is_usable(query, segment) ||
+            (!requirements.allow_degraded && segment.state != ingestion::DataState::Complete)) {
             return false;
         }
     }
@@ -268,7 +308,7 @@ struct DecodedRecord {
     std::string error;
 };
 
-using Decoder = std::function<DecodedRecord(const RawRecord&, const Acquisition&)>;
+using Decoder = std::function<DecodedRecord(const RawRecord &, const Acquisition &)>;
 
 struct PreparedSegment {
     Acquisition acquisition;

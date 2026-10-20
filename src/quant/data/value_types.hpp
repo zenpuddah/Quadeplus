@@ -11,72 +11,83 @@
 namespace quant::data {
 
 class StreamId {
-public:
+  public:
     explicit StreamId(const std::uint64_t value) : value_(value) {
         if (value == 0) {
             throw std::invalid_argument("StreamId must be non-zero");
         }
     }
-    [[nodiscard]] constexpr std::uint64_t value() const noexcept { return value_; }
-    friend constexpr bool operator==(const StreamId&, const StreamId&) = default;
-    friend constexpr auto operator<=>(const StreamId&, const StreamId&) = default;
-private:
+    [[nodiscard]] constexpr std::uint64_t value() const noexcept {
+        return value_;
+    }
+    friend constexpr bool operator==(const StreamId &, const StreamId &) = default;
+    friend constexpr auto operator<=>(const StreamId &, const StreamId &) = default;
+
+  private:
     std::uint64_t value_;
 };
 
 class InstrumentId {
-public:
+  public:
     explicit InstrumentId(const std::uint64_t value) : value_(value) {
         if (value == 0) {
             throw std::invalid_argument("InstrumentId must be non-zero");
         }
     }
 
-    [[nodiscard]] constexpr std::uint64_t value() const noexcept { return value_; }
+    [[nodiscard]] constexpr std::uint64_t value() const noexcept {
+        return value_;
+    }
 
-    friend constexpr bool operator==(const InstrumentId&, const InstrumentId&) = default;
-    friend constexpr auto operator<=>(const InstrumentId&, const InstrumentId&) = default;
+    friend constexpr bool operator==(const InstrumentId &, const InstrumentId &) = default;
+    friend constexpr auto operator<=>(const InstrumentId &, const InstrumentId &) = default;
 
-private:
+  private:
     std::uint64_t value_;
 };
 
 class OrderId {
-public:
+  public:
     explicit OrderId(const std::uint64_t value) : value_(value) {
         if (value == 0) {
             throw std::invalid_argument("OrderId must be non-zero");
         }
     }
 
-    [[nodiscard]] constexpr std::uint64_t value() const noexcept { return value_; }
+    [[nodiscard]] constexpr std::uint64_t value() const noexcept {
+        return value_;
+    }
 
-    friend constexpr bool operator==(const OrderId&, const OrderId&) = default;
-    friend constexpr auto operator<=>(const OrderId&, const OrderId&) = default;
+    friend constexpr bool operator==(const OrderId &, const OrderId &) = default;
+    friend constexpr auto operator<=>(const OrderId &, const OrderId &) = default;
 
-private:
+  private:
     std::uint64_t value_;
 };
 
 class Timestamp {
-public:
-    explicit constexpr Timestamp(const std::int64_t unix_nanos) noexcept : unix_nanos_(unix_nanos) {}
+  public:
+    explicit constexpr Timestamp(const std::int64_t unix_nanos) noexcept
+        : unix_nanos_(unix_nanos) {}
 
-    [[nodiscard]] static constexpr Timestamp from_unix_nanos(const std::int64_t unix_nanos) noexcept {
+    [[nodiscard]] static constexpr Timestamp
+    from_unix_nanos(const std::int64_t unix_nanos) noexcept {
         return Timestamp(unix_nanos);
     }
 
-    [[nodiscard]] constexpr std::int64_t unix_nanos() const noexcept { return unix_nanos_; }
+    [[nodiscard]] constexpr std::int64_t unix_nanos() const noexcept {
+        return unix_nanos_;
+    }
 
-    friend constexpr bool operator==(const Timestamp&, const Timestamp&) = default;
-    friend constexpr auto operator<=>(const Timestamp&, const Timestamp&) = default;
+    friend constexpr bool operator==(const Timestamp &, const Timestamp &) = default;
+    friend constexpr auto operator<=>(const Timestamp &, const Timestamp &) = default;
 
-private:
+  private:
     std::int64_t unix_nanos_;
 };
 
 class VenueId {
-public:
+  public:
     // Zero is reserved so an uninitialized/reference-free venue cannot look valid.
     explicit VenueId(const std::uint32_t value) : value_(value) {
         if (value == 0) {
@@ -84,17 +95,19 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr std::uint32_t value() const noexcept { return value_; }
+    [[nodiscard]] constexpr std::uint32_t value() const noexcept {
+        return value_;
+    }
 
-    friend constexpr bool operator==(const VenueId&, const VenueId&) = default;
-    friend constexpr auto operator<=>(const VenueId&, const VenueId&) = default;
+    friend constexpr bool operator==(const VenueId &, const VenueId &) = default;
+    friend constexpr auto operator<=>(const VenueId &, const VenueId &) = default;
 
-private:
+  private:
     std::uint32_t value_;
 };
 
 class SourceId {
-public:
+  public:
     // Zero is reserved so an uninitialized/reference-free source cannot look valid.
     explicit SourceId(const std::uint32_t value) : value_(value) {
         if (value == 0) {
@@ -102,30 +115,34 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr std::uint32_t value() const noexcept { return value_; }
+    [[nodiscard]] constexpr std::uint32_t value() const noexcept {
+        return value_;
+    }
 
-    friend constexpr bool operator==(const SourceId&, const SourceId&) = default;
-    friend constexpr auto operator<=>(const SourceId&, const SourceId&) = default;
+    friend constexpr bool operator==(const SourceId &, const SourceId &) = default;
+    friend constexpr auto operator<=>(const SourceId &, const SourceId &) = default;
 
-private:
+  private:
     std::uint32_t value_;
 };
 
 class CurrencyCode {
-public:
+  public:
     explicit CurrencyCode(std::string value) : value_(std::move(value)) {
-        if (value_.size() != 3 || !is_uppercase_ascii(value_[0]) || !is_uppercase_ascii(value_[1]) ||
-            !is_uppercase_ascii(value_[2])) {
+        if (value_.size() != 3 || !is_uppercase_ascii(value_[0]) ||
+            !is_uppercase_ascii(value_[1]) || !is_uppercase_ascii(value_[2])) {
             throw std::invalid_argument("CurrencyCode must be three uppercase ASCII letters");
         }
     }
 
-    [[nodiscard]] const std::string& value() const noexcept { return value_; }
+    [[nodiscard]] const std::string &value() const noexcept {
+        return value_;
+    }
 
-    friend bool operator==(const CurrencyCode&, const CurrencyCode&) = default;
-    friend auto operator<=>(const CurrencyCode&, const CurrencyCode&) = default;
+    friend bool operator==(const CurrencyCode &, const CurrencyCode &) = default;
+    friend auto operator<=>(const CurrencyCode &, const CurrencyCode &) = default;
 
-private:
+  private:
     [[nodiscard]] static constexpr bool is_uppercase_ascii(const char value) noexcept {
         return value >= 'A' && value <= 'Z';
     }
@@ -183,7 +200,8 @@ inline constexpr std::int64_t decimal_powers_of_ten[] = {
 } // namespace detail
 
 // Provider decimal fields are normalized at the adapter/boundary, never in hot comparisons.
-[[nodiscard]] inline std::int64_t normalize_decimal(const DecimalInput input, const std::uint8_t target_scale) {
+[[nodiscard]] inline std::int64_t normalize_decimal(const DecimalInput input,
+                                                    const std::uint8_t target_scale) {
     constexpr auto max_scale = std::uint8_t{18};
     if (input.scale > max_scale || target_scale > max_scale) {
         throw std::invalid_argument("decimal scale must be at most 18");
@@ -205,7 +223,8 @@ inline constexpr std::int64_t decimal_powers_of_ten[] = {
 
     const auto divisor = detail::decimal_powers_of_ten[input.scale - target_scale];
     if (input.coefficient % divisor != 0) {
-        throw std::invalid_argument("decimal cannot be represented at the canonical scale without rounding");
+        throw std::invalid_argument(
+            "decimal cannot be represented at the canonical scale without rounding");
     }
     return input.coefficient / divisor;
 }
@@ -216,7 +235,7 @@ struct VenueReference {
 };
 
 class VenueReferenceTable {
-public:
+  public:
     void add(VenueReference reference) {
         if (reference.code.empty()) {
             throw std::invalid_argument("venue reference code must not be empty");
@@ -227,8 +246,8 @@ public:
         references_.push_back(std::move(reference));
     }
 
-    [[nodiscard]] const VenueReference* find(const VenueId id) const noexcept {
-        for (const auto& reference : references_) {
+    [[nodiscard]] const VenueReference *find(const VenueId id) const noexcept {
+        for (const auto &reference : references_) {
             if (reference.id == id) {
                 return &reference;
             }
@@ -236,9 +255,11 @@ public:
         return nullptr;
     }
 
-    [[nodiscard]] std::size_t size() const noexcept { return references_.size(); }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return references_.size();
+    }
 
-private:
+  private:
     std::vector<VenueReference> references_;
 };
 
@@ -250,7 +271,7 @@ struct SourceMetadata {
 };
 
 class SourceMetadataTable {
-public:
+  public:
     void add(SourceMetadata metadata) {
         if (metadata.provider.empty()) {
             throw std::invalid_argument("source metadata provider must not be empty");
@@ -261,8 +282,8 @@ public:
         metadata_.push_back(std::move(metadata));
     }
 
-    [[nodiscard]] const SourceMetadata* find(const SourceId id) const noexcept {
-        for (const auto& metadata : metadata_) {
+    [[nodiscard]] const SourceMetadata *find(const SourceId id) const noexcept {
+        for (const auto &metadata : metadata_) {
             if (metadata.id == id) {
                 return &metadata;
             }
@@ -270,17 +291,21 @@ public:
         return nullptr;
     }
 
-    [[nodiscard]] std::size_t size() const noexcept { return metadata_.size(); }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return metadata_.size();
+    }
 
-private:
+  private:
     std::vector<SourceMetadata> metadata_;
 };
 
 class Price {
-public:
+  public:
     static constexpr std::uint8_t canonical_scale = 9;
 
-    [[nodiscard]] static Price from_raw(const std::int64_t raw_value) noexcept { return Price(raw_value); }
+    [[nodiscard]] static Price from_raw(const std::int64_t raw_value) noexcept {
+        return Price(raw_value);
+    }
 
     [[nodiscard]] static Price from_integer(const std::int64_t value) {
         return from_decimal(DecimalInput{value, 0});
@@ -290,34 +315,43 @@ public:
         return from_raw(normalize_decimal(input, canonical_scale));
     }
 
-    [[nodiscard]] static Price from_decimal(const std::int64_t coefficient, const std::uint8_t scale) {
+    [[nodiscard]] static Price from_decimal(const std::int64_t coefficient,
+                                            const std::uint8_t scale) {
         return from_decimal(DecimalInput{coefficient, scale});
     }
 
-    [[nodiscard]] constexpr std::int64_t raw() const noexcept { return raw_value_; }
-    [[nodiscard]] constexpr bool is_zero() const noexcept { return raw_value_ == 0; }
-    [[nodiscard]] constexpr bool is_negative() const noexcept { return raw_value_ < 0; }
-    [[nodiscard]] constexpr bool is_positive() const noexcept { return raw_value_ > 0; }
+    [[nodiscard]] constexpr std::int64_t raw() const noexcept {
+        return raw_value_;
+    }
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return raw_value_ == 0;
+    }
+    [[nodiscard]] constexpr bool is_negative() const noexcept {
+        return raw_value_ < 0;
+    }
+    [[nodiscard]] constexpr bool is_positive() const noexcept {
+        return raw_value_ > 0;
+    }
 
-    [[nodiscard]] Price operator+(const Price& other) const {
+    [[nodiscard]] Price operator+(const Price &other) const {
         return from_raw(detail::checked_add(raw_value_, other.raw_value_));
     }
 
-    [[nodiscard]] Price operator-(const Price& other) const {
+    [[nodiscard]] Price operator-(const Price &other) const {
         return from_raw(detail::checked_subtract(raw_value_, other.raw_value_));
     }
 
-    friend constexpr bool operator==(const Price&, const Price&) = default;
-    friend constexpr auto operator<=>(const Price&, const Price&) = default;
+    friend constexpr bool operator==(const Price &, const Price &) = default;
+    friend constexpr auto operator<=>(const Price &, const Price &) = default;
 
-private:
+  private:
     explicit constexpr Price(const std::int64_t raw_value) noexcept : raw_value_(raw_value) {}
 
     std::int64_t raw_value_;
 };
 
 class Quantity {
-public:
+  public:
     static constexpr std::uint8_t canonical_scale = 6;
 
     [[nodiscard]] static Quantity from_raw(const std::int64_t raw_value) {
@@ -335,19 +369,26 @@ public:
         return from_raw(normalize_decimal(input, canonical_scale));
     }
 
-    [[nodiscard]] static Quantity from_decimal(const std::int64_t coefficient, const std::uint8_t scale) {
+    [[nodiscard]] static Quantity from_decimal(const std::int64_t coefficient,
+                                               const std::uint8_t scale) {
         return from_decimal(DecimalInput{coefficient, scale});
     }
 
-    [[nodiscard]] constexpr std::int64_t raw() const noexcept { return raw_value_; }
-    [[nodiscard]] constexpr bool is_zero() const noexcept { return raw_value_ == 0; }
-    [[nodiscard]] constexpr bool is_positive() const noexcept { return raw_value_ > 0; }
+    [[nodiscard]] constexpr std::int64_t raw() const noexcept {
+        return raw_value_;
+    }
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return raw_value_ == 0;
+    }
+    [[nodiscard]] constexpr bool is_positive() const noexcept {
+        return raw_value_ > 0;
+    }
 
-    [[nodiscard]] Quantity operator+(const Quantity& other) const {
+    [[nodiscard]] Quantity operator+(const Quantity &other) const {
         return from_raw(detail::checked_add(raw_value_, other.raw_value_));
     }
 
-    [[nodiscard]] Quantity operator-(const Quantity& other) const {
+    [[nodiscard]] Quantity operator-(const Quantity &other) const {
         const auto result = detail::checked_subtract(raw_value_, other.raw_value_);
         if (result < 0) {
             throw std::overflow_error("quantity subtraction would become negative");
@@ -355,17 +396,17 @@ public:
         return from_raw(result);
     }
 
-    friend constexpr bool operator==(const Quantity&, const Quantity&) = default;
-    friend constexpr auto operator<=>(const Quantity&, const Quantity&) = default;
+    friend constexpr bool operator==(const Quantity &, const Quantity &) = default;
+    friend constexpr auto operator<=>(const Quantity &, const Quantity &) = default;
 
-private:
+  private:
     explicit constexpr Quantity(const std::int64_t raw_value) noexcept : raw_value_(raw_value) {}
 
     std::int64_t raw_value_;
 };
 
 class Money {
-public:
+  public:
     static constexpr std::uint8_t canonical_scale = 2;
 
     [[nodiscard]] static Money from_raw(CurrencyCode currency, const std::int64_t raw_amount) {
@@ -376,26 +417,30 @@ public:
         return from_raw(std::move(currency), normalize_decimal(input, canonical_scale));
     }
 
-    [[nodiscard]] const CurrencyCode& currency() const noexcept { return currency_; }
-    [[nodiscard]] constexpr std::int64_t amount() const noexcept { return raw_amount_; }
+    [[nodiscard]] const CurrencyCode &currency() const noexcept {
+        return currency_;
+    }
+    [[nodiscard]] constexpr std::int64_t amount() const noexcept {
+        return raw_amount_;
+    }
 
-    [[nodiscard]] Money operator+(const Money& other) const {
+    [[nodiscard]] Money operator+(const Money &other) const {
         require_same_currency(other);
         return from_raw(currency_, detail::checked_add(raw_amount_, other.raw_amount_));
     }
 
-    [[nodiscard]] Money operator-(const Money& other) const {
+    [[nodiscard]] Money operator-(const Money &other) const {
         require_same_currency(other);
         return from_raw(currency_, detail::checked_subtract(raw_amount_, other.raw_amount_));
     }
 
-    friend bool operator==(const Money&, const Money&) = default;
+    friend bool operator==(const Money &, const Money &) = default;
 
-private:
+  private:
     Money(CurrencyCode currency, const std::int64_t raw_amount)
         : currency_(std::move(currency)), raw_amount_(raw_amount) {}
 
-    void require_same_currency(const Money& other) const {
+    void require_same_currency(const Money &other) const {
         if (currency_ != other.currency_) {
             throw std::invalid_argument("money arithmetic requires matching currencies");
         }

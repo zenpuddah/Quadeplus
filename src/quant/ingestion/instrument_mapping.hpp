@@ -22,7 +22,7 @@ struct ProviderMappingSegment {
     std::optional<data::SourceId> source_id = std::nullopt;
 };
 
-inline void validate(const ProviderMappingSegment& segment) {
+inline void validate(const ProviderMappingSegment &segment) {
     validate(segment.range);
     if (segment.provider.empty()) {
         throw std::invalid_argument("provider mapping name must not be empty");
@@ -36,20 +36,18 @@ inline void validate(const ProviderMappingSegment& segment) {
 }
 
 class InstrumentMappingRegistry {
-public:
+  public:
     virtual ~InstrumentMappingRegistry() = default;
-    virtual std::vector<ProviderMappingSegment> resolve(
-        data::InstrumentId instrument_id,
-        std::string_view provider,
-        TimeRange event_time_range,
-        std::optional<data::VenueId> venue_id = std::nullopt) const = 0;
+    virtual std::vector<ProviderMappingSegment>
+    resolve(data::InstrumentId instrument_id, std::string_view provider, TimeRange event_time_range,
+            std::optional<data::VenueId> venue_id = std::nullopt) const = 0;
 };
 
 class InMemoryInstrumentMappingRegistry final : public InstrumentMappingRegistry {
-public:
+  public:
     void add(ProviderMappingSegment mapping) {
         validate(mapping);
-        for (const auto& existing : mappings_) {
+        for (const auto &existing : mappings_) {
             if (same_scope(existing, mapping) && overlaps(existing.range, mapping.range)) {
                 throw std::invalid_argument("provider mapping intervals must not overlap");
             }
@@ -57,18 +55,17 @@ public:
         mappings_.push_back(std::move(mapping));
     }
 
-    [[nodiscard]] std::vector<ProviderMappingSegment> resolve(
-        const data::InstrumentId instrument_id,
-        const std::string_view provider,
-        const TimeRange event_time_range,
-        const std::optional<data::VenueId> venue_id = std::nullopt) const override {
+    [[nodiscard]] std::vector<ProviderMappingSegment>
+    resolve(const data::InstrumentId instrument_id, const std::string_view provider,
+            const TimeRange event_time_range,
+            const std::optional<data::VenueId> venue_id = std::nullopt) const override {
         validate(event_time_range);
         if (provider.empty()) {
             throw std::invalid_argument("provider mapping name must not be empty");
         }
 
         std::vector<ProviderMappingSegment> resolved;
-        for (const auto& mapping : mappings_) {
+        for (const auto &mapping : mappings_) {
             if (mapping.instrument_id != instrument_id || mapping.provider != provider) {
                 continue;
             }
@@ -88,28 +85,28 @@ public:
             }
         }
 
-        std::sort(resolved.begin(), resolved.end(), [](const ProviderMappingSegment& lhs, const ProviderMappingSegment& rhs) {
-            if (lhs.range.start != rhs.range.start) {
-                return lhs.range.start < rhs.range.start;
-            }
-            if (lhs.range.end != rhs.range.end) {
-                return lhs.range.end < rhs.range.end;
-            }
-            if (lhs.venue_id != rhs.venue_id) {
-                return lhs.venue_id < rhs.venue_id;
-            }
-            if (lhs.source_id != rhs.source_id) {
-                return lhs.source_id < rhs.source_id;
-            }
-            return lhs.provider_id < rhs.provider_id;
-        });
+        std::sort(resolved.begin(), resolved.end(),
+                  [](const ProviderMappingSegment &lhs, const ProviderMappingSegment &rhs) {
+                      if (lhs.range.start != rhs.range.start) {
+                          return lhs.range.start < rhs.range.start;
+                      }
+                      if (lhs.range.end != rhs.range.end) {
+                          return lhs.range.end < rhs.range.end;
+                      }
+                      if (lhs.venue_id != rhs.venue_id) {
+                          return lhs.venue_id < rhs.venue_id;
+                      }
+                      if (lhs.source_id != rhs.source_id) {
+                          return lhs.source_id < rhs.source_id;
+                      }
+                      return lhs.provider_id < rhs.provider_id;
+                  });
         return resolved;
     }
 
-private:
-    [[nodiscard]] static bool same_scope(
-        const ProviderMappingSegment& lhs,
-        const ProviderMappingSegment& rhs) noexcept {
+  private:
+    [[nodiscard]] static bool same_scope(const ProviderMappingSegment &lhs,
+                                         const ProviderMappingSegment &rhs) noexcept {
         return lhs.instrument_id == rhs.instrument_id && lhs.provider == rhs.provider &&
                lhs.venue_id == rhs.venue_id && lhs.source_id == rhs.source_id;
     }

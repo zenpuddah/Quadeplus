@@ -78,3 +78,8 @@ The optional Python utility inspects stored files; it is not a binding layer.
 
 See [verification and limits](docs/verification.md) for tested guarantees and the
 separate status of the optional provider SDK integration.
+
+## Contributing
+
+See [code style and checks](docs/contributing.md) for pinned formatters, Python lint,
+the local check command and the GitHub Actions style job.
